@@ -92,6 +92,8 @@ export async function getHostels() {
       "Price Per Year",
       "Image URLs",
       "Image Public IDs",
+      "Video URL",
+      "Video Public ID",
       "WhatsApp Contact",
       "Description",
       "Status",
@@ -147,15 +149,19 @@ export async function getHostels() {
         .map((id: string) => id.trim())
         .filter((id: string) => id.length > 0)
 
+      // Get video URL and public ID
+      const videoUrl = row.get("Video URL") || undefined
+      const videoPublicId = row.get("Video Public ID") || undefined
+
       const hostelData = {
         id: row.get("ID"),
         name: row.get("Name"),
         location: row.get("Location"),
         pricePerYear: Number.parseInt(row.get("Price Per Year")),
-        imageUrl: imageUrls[0] || "/placeholder.svg", // Use first image as main
-        imageUrls: imageUrls, // All images
-        imagePublicId: imagePublicIds[0] || "",
+        imageUrls: imageUrls,
+        videoUrl: videoUrl,
         imagePublicIds: imagePublicIds,
+        videoPublicId: videoPublicId,
         whatsappContact: row.get("WhatsApp Contact"),
         description: row.get("Description"),
         status: row.get("Status"),
@@ -165,9 +171,8 @@ export async function getHostels() {
 
       console.log(`Processed hostel data for ${hostelData.id}:`, {
         name: hostelData.name,
-        hasImageUrl: Boolean(hostelData.imageUrl),
-        imageUrl: hostelData.imageUrl,
-        imageUrlsCount: hostelData.imageUrls.length
+        imageUrlsCount: hostelData.imageUrls.length,
+        hasVideo: Boolean(hostelData.videoUrl)
       })
 
       return hostelData

@@ -3,8 +3,10 @@ export interface Hostel {
   name: string
   location: string
   pricePerYear: number
-  imageUrl: string
-  imagePublicId: string
+  imageUrls: string[]
+  videoUrl?: string
+  imagePublicIds: string[]
+  videoPublicId?: string
   whatsappContact: string
   description: string
   status: "available" | "full"

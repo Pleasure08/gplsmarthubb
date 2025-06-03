@@ -13,7 +13,8 @@ interface Hostel {
   name: string
   location: string
   pricePerYear: number
-  imageUrl: string
+  imageUrls: string[]
+  videoUrl?: string
   status: string
   views: number
 }
@@ -193,7 +194,7 @@ export function AdminManagement() {
                   <div className="flex items-center gap-4">
                     <div className="relative w-16 h-16 rounded-lg overflow-hidden">
                       <Image
-                        src={hostel.imageUrl || "/placeholder.svg?height=64&width=64"}
+                        src={hostel.imageUrls[0] || "/placeholder.svg?height=64&width=64"}
                         alt={hostel.name}
                         fill
                         className="object-cover"

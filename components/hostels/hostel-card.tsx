@@ -17,8 +17,8 @@ export function HostelCard({ hostel }: HostelCardProps) {
   console.log("Hostel Card Debug:", {
     hostelId: hostel.id,
     hostelName: hostel.name,
-    imageUrl: hostel.imageUrl,
-    hasImage: Boolean(hostel.imageUrl)
+    imageUrl: hostel.imageUrls[0],
+    hasImage: Boolean(hostel.imageUrls[0])
   })
 
   const handleWhatsAppContact = () => {
@@ -40,7 +40,7 @@ export function HostelCard({ hostel }: HostelCardProps) {
       <Link href={`/hostels/${hostel.id}`} className="block">
         <div className="relative aspect-video overflow-hidden bg-gray-100">
           <Image
-            src={hostel.imageUrl || "/placeholder.svg?height=200&width=400"}
+            src={hostel.imageUrls[0] || "/placeholder.svg?height=200&width=400"}
             alt={hostel.name}
             fill
             className="object-cover transition-transform group-hover:scale-105"

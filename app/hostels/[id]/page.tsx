@@ -4,14 +4,14 @@ import { useState, useEffect } from "react"
 import { Header } from "@/components/layout/header"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { MessageCircle, ArrowLeft, MapPin, Home, Calendar, Eye } from "lucide-react"
+import { MessageCircle, ArrowLeft, MapPin, Home, Calendar, Eye, X } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import { useToast } from "@/hooks/use-toast"
 import type { Hostel } from "@/lib/types"
 import { useParams } from "next/navigation"
 
-interface PageParams {
+interface PageParams extends Record<string, string> {
   id: string
 }
 
@@ -21,7 +21,7 @@ export default function HostelPreviewPage() {
   const [hostel, setHostel] = useState<Hostel | null>(null)
   const [loading, setLoading] = useState(true)
   const { toast } = useToast()
-  const [currentImageIndex, setCurrentImageIndex] = useState(0)
+  const [currentImageIndex, setCurrentImageIndex] = useState<number | null>(null)
 
   useEffect(() => {
     if (id) {
@@ -111,19 +111,55 @@ export default function HostelPreviewPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Image Gallery */}
           <div className="space-y-4">
-            <div className="relative aspect-video rounded-lg overflow-hidden bg-gray-100">
-              <Image
-                src={hostel.imageUrl}
-                alt={hostel.name}
-                fill
-                className="object-cover"
-              />
-              {hostel.status === "full" && (
-                <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                  <span className="text-white font-bold text-lg">FULLY BOOKED</span>
+            {/* Video Display */}
+            {hostel.videoUrl && (
+              <div className="relative aspect-video rounded-lg overflow-hidden bg-gray-100">
+                <video
+                  src={hostel.videoUrl}
+                  controls
+                  className="w-full h-full"
+                  poster={hostel.imageUrls[0]}
+                />
+              </div>
+            )}
+
+            {/* Image Gallery */}
+            <div className="grid grid-cols-3 gap-4">
+              {hostel.imageUrls.map((imageUrl, index) => (
+                <div
+                  key={index}
+                  className="relative aspect-video rounded-lg overflow-hidden bg-gray-100 cursor-pointer"
+                  onClick={() => setCurrentImageIndex(index)}
+                >
+                  <Image
+                    src={imageUrl}
+                    alt={`${hostel.name} - Image ${index + 1}`}
+                    fill
+                    className="object-cover"
+                  />
                 </div>
-              )}
+              ))}
             </div>
+
+            {/* Full-size Image Modal */}
+            {currentImageIndex !== null && (
+              <div className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4">
+                <button
+                  onClick={() => setCurrentImageIndex(null)}
+                  className="absolute top-4 right-4 text-white hover:text-gray-300"
+                >
+                  <X className="h-6 w-6" />
+                </button>
+                <div className="relative w-full max-w-4xl aspect-video">
+                  <Image
+                    src={hostel.imageUrls[currentImageIndex]}
+                    alt={`${hostel.name} - Full size image ${currentImageIndex + 1}`}
+                    fill
+                    className="object-contain"
+                  />
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Hostel Details */}

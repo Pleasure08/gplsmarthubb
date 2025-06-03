@@ -24,6 +24,7 @@ export function AdminHostelForm({ onSuccess }: AdminHostelFormProps) {
     status: "available",
   })
   const [images, setImages] = useState<File[]>([])
+  const [video, setVideo] = useState<File | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const { toast } = useToast()
@@ -38,10 +39,10 @@ export function AdminHostelForm({ onSuccess }: AdminHostelFormProps) {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const newFiles = Array.from(e.target.files)
-      if (images.length + newFiles.length > 4) {
+      if (images.length + newFiles.length > 3) {
         toast({
           title: "Too many images",
-          description: "You can upload maximum 4 images.",
+          description: "You can upload maximum 3 images.",
           variant: "destructive",
         })
         return
@@ -50,8 +51,31 @@ export function AdminHostelForm({ onSuccess }: AdminHostelFormProps) {
     }
   }
 
+  const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0]
+      // Check file size (max 100MB)
+      if (file.size > 100 * 1024 * 1024) {
+        toast({
+          title: "File too large",
+          description: "Video must be less than 100MB",
+          variant: "destructive",
+        })
+        return
+      }
+      setVideo(file)
+    }
+  }
+
   const removeImage = (index: number) => {
     setImages(images.filter((_, i) => i !== index))
+  }
+
+  const removeVideo = () => {
+    setVideo(null)
+    // Reset file input
+    const videoInput = document.getElementById("video") as HTMLInputElement
+    if (videoInput) videoInput.value = ""
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -81,6 +105,12 @@ export function AdminHostelForm({ onSuccess }: AdminHostelFormProps) {
       })
       uploadData.append("imageCount", images.length.toString())
 
+      // Append video if exists
+      if (video) {
+        uploadData.append("video", video)
+        uploadData.append("hasVideo", "true")
+      }
+
       const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || window.location.origin
       const response = await fetch(`${baseUrl}/api/admin/hostels`, {
         method: "POST",
@@ -105,10 +135,13 @@ export function AdminHostelForm({ onSuccess }: AdminHostelFormProps) {
           status: "available",
         })
         setImages([])
+        setVideo(null)
 
-        // Reset file input
+        // Reset file inputs
         const fileInput = document.getElementById("images") as HTMLInputElement
+        const videoInput = document.getElementById("video") as HTMLInputElement
         if (fileInput) fileInput.value = ""
+        if (videoInput) videoInput.value = ""
 
         // Call success callback to refresh data
         if (onSuccess) {
@@ -125,9 +158,8 @@ export function AdminHostelForm({ onSuccess }: AdminHostelFormProps) {
         description: error instanceof Error ? error.message : "Failed to add hostel. Please try again.",
         variant: "destructive",
       })
-    } finally {
-      setLoading(false)
     }
+    setLoading(false)
   }
 
   return (
@@ -219,12 +251,12 @@ export function AdminHostelForm({ onSuccess }: AdminHostelFormProps) {
       </div>
 
       <div>
-        <Label htmlFor="images">Hostel Images (1-4 images)</Label>
+        <Label htmlFor="images">Hostel Images (1-3 images)</Label>
         <Input id="images" type="file" accept="image/*" multiple onChange={handleImageChange} className="mb-4" />
 
         {/* Image Preview */}
         {images.length > 0 && (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
             {images.map((image, index) => (
               <div key={index} className="relative">
                 <img
@@ -244,10 +276,33 @@ export function AdminHostelForm({ onSuccess }: AdminHostelFormProps) {
           </div>
         )}
 
-        {images.length < 4 && (
+        {images.length < 3 && (
           <div className="flex items-center gap-2 text-sm text-gray-600">
             <Upload className="h-4 w-4" />
-            <span>You can upload {4 - images.length} more image(s)</span>
+            <span>You can upload {3 - images.length} more image(s)</span>
+          </div>
+        )}
+      </div>
+
+      <div>
+        <Label htmlFor="video">Hostel Video (Optional, max 100MB)</Label>
+        <Input id="video" type="file" accept="video/*" onChange={handleVideoChange} className="mb-4" />
+
+        {/* Video Preview */}
+        {video && (
+          <div className="relative w-full aspect-video mb-4">
+            <video
+              src={URL.createObjectURL(video)}
+              controls
+              className="w-full h-full rounded-lg border"
+            />
+            <button
+              type="button"
+              onClick={removeVideo}
+              className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+            >
+              <X className="h-3 w-3" />
+            </button>
           </div>
         )}
       </div>

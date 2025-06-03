@@ -75,4 +75,36 @@ export async function uploadImage(file: File, folder: string) {
   }
 }
 
+export async function uploadVideo(file: File, folder: string) {
+  try {
+    // Convert file to base64
+    const bytes = await file.arrayBuffer()
+    const buffer = Buffer.from(bytes)
+    const base64String = buffer.toString("base64")
+    const dataURI = `data:${file.type};base64,${base64String}`
+
+    // Upload to Cloudinary with video-specific options
+    const result = await cloudinary.uploader.upload(dataURI, {
+      folder: folder,
+      resource_type: "video",
+      chunk_size: 6000000, // 6MB chunks for better upload handling
+      eager: [
+        { 
+          format: "mp4",
+          transformation: [
+            { width: 1280, crop: "scale" },
+            { quality: "auto" }
+          ]
+        }
+      ],
+      eager_async: true
+    })
+
+    return result
+  } catch (error) {
+    console.error("Error uploading video to Cloudinary:", error)
+    throw error
+  }
+}
+
 export { cloudinary }

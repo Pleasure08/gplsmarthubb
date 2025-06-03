@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { addHostel } from "@/lib/google-sheets"
-import { uploadImage } from "@/lib/cloudinary"
+import { uploadImage, uploadVideo } from "@/lib/cloudinary"
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,12 +16,18 @@ export async function POST(request: NextRequest) {
     const description = formData.get("description") as string
     const status = formData.get("status") as string
     const imageCount = Number.parseInt(formData.get("imageCount") as string) || 0
+    const hasVideo = formData.get("hasVideo") === "true"
 
-    console.log("Form fields:", { name, location, pricePerYear, whatsappContact, status, imageCount })
+    console.log("Form fields:", { name, location, pricePerYear, whatsappContact, status, imageCount, hasVideo })
 
     if (imageCount === 0) {
       console.log("No images provided")
-      return NextResponse.json({ error: "No images provided" }, { status: 400 })
+      return NextResponse.json({ error: "At least one image is required" }, { status: 400 })
+    }
+
+    if (imageCount > 3) {
+      console.log("Too many images")
+      return NextResponse.json({ error: "Maximum 3 images allowed" }, { status: 400 })
     }
 
     // Verify Cloudinary configuration
@@ -64,6 +70,27 @@ export async function POST(request: NextRequest) {
       publicIds: imagePublicIds
     })
 
+    // Upload video if provided
+    let videoUrl = ""
+    let videoPublicId = ""
+    if (hasVideo) {
+      const videoFile = formData.get("video") as File
+      if (videoFile) {
+        console.log("Uploading video:", {
+          name: videoFile.name,
+          type: videoFile.type,
+          size: videoFile.size
+        })
+        const videoUploadResult = (await uploadVideo(videoFile, "hostels")) as any
+        console.log("Video upload result:", {
+          url: videoUploadResult.secure_url,
+          publicId: videoUploadResult.public_id
+        })
+        videoUrl = videoUploadResult.secure_url
+        videoPublicId = videoUploadResult.public_id
+      }
+    }
+
     // Prepare data for Google Sheets
     const hostelData = {
       ID: `H${Date.now()}`,
@@ -72,6 +99,8 @@ export async function POST(request: NextRequest) {
       "Price Per Year": pricePerYear,
       "Image URLs": imageUrls.join(","),
       "Image Public IDs": imagePublicIds.join(","),
+      "Video URL": videoUrl,
+      "Video Public ID": videoPublicId,
       "WhatsApp Contact": whatsappContact,
       Description: description,
       Status: status,
@@ -92,8 +121,8 @@ export async function POST(request: NextRequest) {
         success: true, 
         hostel: {
           ...hostelData,
-          imageUrl: imageUrls[0], // Add main image URL for immediate display
           imageUrls: imageUrls,
+          videoUrl: videoUrl,
           id: hostelData.ID
         }
       })
