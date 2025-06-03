@@ -10,11 +10,12 @@ export default function HomePage() {
     <div className="min-h-screen">
       <Header />
 
-      {/* Hero Section with Geometric Background */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+      {/* Hero Section */}
+      <section className="relative min-h-[80vh] flex items-center justify-center overflow-hidden">
+        {/* Background Image */}
         <div className="absolute inset-0">
           <Image src="/images/geometric-bg.jpeg" alt="Geometric Background" fill className="object-cover" priority />
-          <div className="absolute inset-0 bg-gradient-to-br from-gray-900/70 to-gray-800/70"></div>
+          <div className="absolute inset-0 bg-gradient-to-br from-gray-900/80 to-gray-800/80"></div>
         </div>
 
         <div className="relative z-10 container mx-auto px-4 text-center text-white">
@@ -25,17 +26,11 @@ export default function HomePage() {
                 GPL SmartHub
               </span>
             </h1>
-            <p
-              className="text-xl md:text-2xl mb-8 leading-relaxed max-w-4xl mx-auto text-gray-100 animate-slide-in-up"
-              style={{ animationDelay: "0.2s" }}
-            >
+            <p className="text-xl md:text-2xl mb-8 leading-relaxed max-w-4xl mx-auto text-gray-100">
               Your one-stop platform for finding quality hostels and trading items in the student community. Safe,
               reliable, and built for students.
             </p>
-            <div
-              className="flex flex-col sm:flex-row gap-6 justify-center animate-slide-in-up"
-              style={{ animationDelay: "0.4s" }}
-            >
+            <div className="flex flex-col sm:flex-row gap-6 justify-center">
               <Button
                 asChild
                 size="lg"
@@ -48,9 +43,8 @@ export default function HomePage() {
               </Button>
               <Button
                 asChild
-                variant="outline"
                 size="lg"
-                className="text-lg px-8 py-4 border-2 border-white text-white hover:bg-white hover:text-gray-900 hover-scale shadow-lg"
+                className="text-lg px-8 py-4 bg-white text-gray-900 hover:bg-gray-100 hover-scale shadow-lg"
               >
                 <Link href="/marketplace">
                   <ShoppingBag className="h-5 w-5 mr-2" />
@@ -62,27 +56,23 @@ export default function HomePage() {
         </div>
 
         {/* Floating Elements */}
-        <div className="absolute top-20 left-10 animate-float">
-          <div className="w-16 h-16 bg-orange-400/30 rounded-full glass-effect"></div>
-        </div>
-        <div className="absolute bottom-20 right-10 animate-float" style={{ animationDelay: "1s" }}>
-          <div className="w-12 h-12 bg-yellow-400/30 rounded-full glass-effect"></div>
-        </div>
-        <div className="absolute top-1/2 right-20 animate-float" style={{ animationDelay: "2s" }}>
-          <div className="w-8 h-8 bg-red-400/30 rounded-full glass-effect"></div>
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-4 -right-4 w-72 h-72 bg-orange-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
+          <div className="absolute -bottom-8 -left-4 w-72 h-72 bg-yellow-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-red-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000"></div>
         </div>
       </section>
 
       {/* Features Section */}
       <section className="py-20 bg-gray-50">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-16 animate-slide-in-up">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4 gradient-text">Why Choose GPL SmartHub?</h2>
-            <p className="text-xl text-gray-600">Discover the features that make us the best choice for students</p>
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-bold mb-4">What We Offer</h2>
+            <p className="text-xl text-gray-600">Everything you need in one place</p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-12 max-w-6xl mx-auto">
-            <Card className="hover-lift animate-slide-in-left overflow-hidden">
+            <Card className="hover-lift overflow-hidden">
               <div className="relative h-64">
                 <Image src="/images/hostel-building.jpeg" alt="Quality Hostels" fill className="object-cover" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
@@ -108,7 +98,7 @@ export default function HomePage() {
               </CardContent>
             </Card>
 
-            <Card className="hover-lift animate-slide-in-right overflow-hidden" style={{ animationDelay: "0.2s" }}>
+            <Card className="hover-lift overflow-hidden">
               <div className="relative h-64">
                 <Image src="/images/marketplace-bg.jpeg" alt="Student Marketplace" fill className="object-cover" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
@@ -123,7 +113,7 @@ export default function HomePage() {
                   verified sellers and secure payment processing.
                 </p>
                 <div className="flex items-center justify-between">
-                  <Button asChild variant="outline" className="hover-scale">
+                  <Button asChild className="hover-scale">
                     <Link href="/marketplace">Visit Marketplace</Link>
                   </Button>
                   <div className="flex items-center text-sm text-gray-500">
@@ -144,18 +134,18 @@ export default function HomePage() {
             <h2 className="text-4xl font-bold mb-4">Ready to Get Started?</h2>
             <p className="text-xl mb-8 opacity-90">Join thousands of students who trust GPL SmartHub</p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" className="bg-white text-orange-500 hover:bg-gray-100 hover-scale">
-                <Link href="/hostels" className="flex items-center">
+              <Button asChild size="lg" className="bg-white text-orange-500 hover:bg-gray-100 hover-scale">
+                <Link href="/hostels">
                   <Building className="h-5 w-5 mr-2" />
                   Find Your Hostel
                 </Link>
               </Button>
               <Button
+                asChild
                 size="lg"
-                variant="outline"
-                className="border-white text-white hover:bg-white hover:text-orange-500 hover-scale"
+                className="border-2 border-white text-white hover:bg-white hover:text-orange-500 hover-scale"
               >
-                <Link href="/listing" className="flex items-center">
+                <Link href="/listing">
                   <Star className="h-5 w-5 mr-2" />
                   List Your Property
                 </Link>
@@ -169,7 +159,7 @@ export default function HomePage() {
       <footer className="bg-gray-900 text-white py-12">
         <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-4 gap-8">
-            <div className="animate-slide-in-left">
+            <div>
               <h3 className="text-xl font-bold mb-4 bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">
                 GPL SmartHub
               </h3>
@@ -178,7 +168,7 @@ export default function HomePage() {
               </p>
             </div>
 
-            <div className="animate-slide-in-left" style={{ animationDelay: "0.1s" }}>
+            <div>
               <h4 className="font-semibold mb-4">Quick Links</h4>
               <ul className="space-y-2 text-gray-400">
                 <li>
@@ -199,7 +189,7 @@ export default function HomePage() {
               </ul>
             </div>
 
-            <div className="animate-slide-in-left" style={{ animationDelay: "0.2s" }}>
+            <div>
               <h4 className="font-semibold mb-4">Services</h4>
               <ul className="space-y-2 text-gray-400">
                 <li>
@@ -220,44 +210,18 @@ export default function HomePage() {
               </ul>
             </div>
 
-            <div className="animate-slide-in-left" style={{ animationDelay: "0.3s" }}>
-              <h4 className="font-semibold mb-4">Contact Us</h4>
-              <div className="space-y-3 text-gray-400">
-                <div className="flex items-center hover-scale">
-                  <Mail className="h-4 w-4 mr-2" />
-                  <a href="mailto:gplsmarthub@gmail.com" className="hover:text-white transition-colors">
-                    gplsmarthub@gmail.com
-                  </a>
-                </div>
-                <div className="flex items-center hover-scale">
-                  <Phone className="h-4 w-4 mr-2" />
-                  <a href="tel:+2348153518887" className="hover:text-white transition-colors">
-                    +234 815 351 8887
-                  </a>
-                </div>
-                <div className="flex items-center hover-scale">
-                  <Phone className="h-4 w-4 mr-2" />
-                  <a href="tel:+2348083169080" className="hover:text-white transition-colors">
-                    +234 808 316 9080
-                  </a>
-                </div>
-                <div className="flex items-center hover-scale">
-                  <MessageCircle className="h-4 w-4 mr-2" />
-                  <a
-                    href="https://wa.me/2348153518887?text=Hi! I need help with GPL SmartHub"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hover:text-white transition-colors"
-                  >
-                    Chat on WhatsApp
-                  </a>
-                </div>
-              </div>
+            <div>
+              <h4 className="font-semibold mb-4">Contact</h4>
+              <ul className="space-y-2 text-gray-400">
+                <li>Email: support@gplsmarthub.com</li>
+                <li>Phone: +234 815 351 8887</li>
+                <li>Lagos, Nigeria</li>
+              </ul>
             </div>
           </div>
 
-          <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400 animate-slide-in-up">
-            <p>&copy; 2025 GPL SmartHub. Built for students, by students.</p>
+          <div className="mt-12 pt-8 border-t border-gray-800 text-center text-gray-400">
+            <p>&copy; {new Date().getFullYear()} GPL SmartHub. All rights reserved.</p>
           </div>
         </div>
       </footer>
