@@ -23,13 +23,31 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     row.set("Views", (currentViews + 1).toString())
     await row.save()
 
+    // Get and clean image URLs
+    const imageUrls = (row.get("Image URLs") || "")
+      .split(",")
+      .map((url: string) => url.trim())
+      .filter((url: string) => url.length > 0)
+
+    // Get and clean image public IDs
+    const imagePublicIds = (row.get("Image Public IDs") || "")
+      .split(",")
+      .map((id: string) => id.trim())
+      .filter((id: string) => id.length > 0)
+
+    // Get video URL and public ID
+    const videoUrl = row.get("Video URL") || undefined
+    const videoPublicId = row.get("Video Public ID") || undefined
+
     const hostel = {
       id: row.get("ID"),
       name: row.get("Name"),
       location: row.get("Location"),
       pricePerYear: parseFloat(row.get("Price Per Year")),
-      imageUrl: row.get("Image URL"),
-      imagePublicId: row.get("Image Public ID"),
+      imageUrls: imageUrls,
+      videoUrl: videoUrl,
+      imagePublicIds: imagePublicIds,
+      videoPublicId: videoPublicId,
       whatsappContact: row.get("WhatsApp Contact"),
       description: row.get("Description"),
       status: row.get("Status"),

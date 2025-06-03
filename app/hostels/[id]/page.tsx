@@ -125,7 +125,7 @@ export default function HostelPreviewPage() {
 
             {/* Image Gallery */}
             <div className="grid grid-cols-3 gap-4">
-              {hostel.imageUrls.map((imageUrl, index) => (
+              {hostel.imageUrls?.map((imageUrl, index) => (
                 <div
                   key={index}
                   className="relative aspect-video rounded-lg overflow-hidden bg-gray-100 cursor-pointer"
@@ -142,7 +142,7 @@ export default function HostelPreviewPage() {
             </div>
 
             {/* Full-size Image Modal */}
-            {currentImageIndex !== null && (
+            {currentImageIndex !== null && hostel.imageUrls[currentImageIndex] && (
               <div className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4">
                 <button
                   onClick={() => setCurrentImageIndex(null)}
