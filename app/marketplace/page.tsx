@@ -21,6 +21,7 @@ export default function MarketplacePage() {
   const [selectedCategory, setSelectedCategory] = useState("all")
   const [priceFilter, setPriceFilter] = useState({ minPrice: 0, maxPrice: Number.POSITIVE_INFINITY })
   const [showFilters, setShowFilters] = useState(false)
+  const [showGridSettings, setShowGridSettings] = useState(false)
   const [gridSize, setGridSize] = useState("3x3")
 
   const categories = [
@@ -201,50 +202,11 @@ export default function MarketplacePage() {
                 Start Selling
               </Link>
             </Button>
-            <Button
-              variant="outline"
-              size="lg"
-              className="border-2 border-white text-white hover:bg-white/10 hover-scale animate-float"
-              style={{ animationDelay: "0.2s" }}
-              onClick={() => setShowFilters(!showFilters)}
-            >
-              <SlidersHorizontal className="h-5 w-5 mr-2" />
-              Browse Categories
-            </Button>
           </div>
         </div>
       </div>
 
       <div className="container mx-auto px-4 py-8 bg-gray-50">
-        {/* Category Widgets */}
-        <div className="mb-8 animate-slide-in-up">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Browse by Category</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 stagger-children">
-            {categories.map((category, index) => {
-              const Icon = category.icon
-              return (
-                <Card
-                  key={category.id}
-                  className={`cursor-pointer hover-lift transition-all duration-300 animate-scale-in ${
-                    selectedCategory === category.id ? "ring-2 ring-orange-500" : ""
-                  }`}
-                  style={{ animationDelay: `${index * 0.1}s` }}
-                  onClick={() => setSelectedCategory(category.id)}
-                >
-                  <CardContent className="p-4 text-center">
-                    <div
-                      className={`w-12 h-12 ${category.color} rounded-lg flex items-center justify-center mx-auto mb-2 group-hover:scale-110 transition-transform duration-300`}
-                    >
-                      <Icon className="h-6 w-6 text-gray-700" />
-                    </div>
-                    <p className="text-sm font-medium">{category.name}</p>
-                  </CardContent>
-                </Card>
-              )
-            })}
-          </div>
-        </div>
-
         {/* Search and Filter Section */}
         <div className="bg-white py-8 shadow-lg rounded-lg animate-slide-in-up" style={{ animationDelay: "0.6s" }}>
           <div className="container mx-auto px-4">
@@ -252,14 +214,40 @@ export default function MarketplacePage() {
               <div className="w-full md:w-1/2">
                 <SearchBar value={searchTerm} onChange={setSearchTerm} placeholder="Search items..." />
               </div>
-              <div className="w-full md:w-1/2">
-                <PriceRangeFilter 
-                  onFilterChange={(filters) => setPriceFilter({ minPrice: filters.minPrice, maxPrice: filters.maxPrice })}
+              <Button
+                variant="ghost"
+                size="icon"
+                className="hover-scale"
+                onClick={() => setShowFilters(!showFilters)}
+                title="Toggle Price Filter"
+              >
+                <SlidersHorizontal className="h-5 w-5" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="hover-scale"
+                onClick={() => setShowGridSettings(!showGridSettings)}
+                title="Toggle Grid Settings"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-layout-grid"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>
+              </Button>
+            </div>
+
+            {showFilters && (
+              <div className="mt-4 animate-slide-in-up">
+                <PriceRangeFilter
+                  onFilterChange={handlePriceFilterChange}
                   title="Filter by Price"
                 />
               </div>
-              <GridSettings gridSize={gridSize} onGridSizeChange={setGridSize} />
-            </div>
+            )}
+
+            {showGridSettings && (
+              <div className="mt-4 animate-slide-in-up">
+                <GridSettings gridSize={gridSize} onGridSizeChange={setGridSize} />
+              </div>
+            )}
           </div>
         </div>
 

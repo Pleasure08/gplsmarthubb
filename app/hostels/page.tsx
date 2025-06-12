@@ -182,10 +182,6 @@ export default function HostelsPage() {
               <Building className="h-5 w-5 mr-2" />
               Browse All Hostels
             </Button>
-            <Button variant="outline" className="border-2 border-white text-white hover:bg-white/10 hover-scale animate-float" style={{ animationDelay: "0.2s" }}>
-              <MapPin className="h-5 w-5 mr-2" />
-              Search by Location
-            </Button>
           </div>
         </div>
       </div>
