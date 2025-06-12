@@ -4,14 +4,14 @@ import { useState, useEffect } from "react"
 import { Header } from "@/components/layout/header"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { MessageCircle, ArrowLeft } from "lucide-react"
+import { MessageCircle, ArrowLeft, Package, User, Calendar, CheckCircle } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import { useToast } from "@/hooks/use-toast"
 import type { MarketplaceItem } from "@/lib/types"
 import { useParams } from "next/navigation"
 
-interface PageParams {
+interface PageParams extends Record<string, string | string[]> {
   id: string
 }
 
@@ -118,12 +118,14 @@ export default function ItemPreviewPage() {
                   alt={`${item.title} - Image ${currentImageIndex + 1}`}
                   fill
                   className="object-cover"
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                  priority
                 />
               )}
             </div>
             {/* Thumbnail Gallery */}
             {item.images && item.images.length > 1 && (
-              <div className="grid grid-cols-4 gap-2">
+              <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-4 gap-2">
                 {item.images.map((image, index) => (
                   <button
                     key={index}
@@ -137,6 +139,7 @@ export default function ItemPreviewPage() {
                       alt={`${item.title} - Thumbnail ${index + 1}`}
                       fill
                       className="object-cover"
+                      sizes="(max-width: 640px) 25vw, (max-width: 1024px) 16.67vw, 12.5vw"
                     />
                   </button>
                 ))}
@@ -147,52 +150,56 @@ export default function ItemPreviewPage() {
           {/* Item Details */}
           <div className="space-y-6">
             <div>
-              <h1 className="text-3xl font-bold mb-2">{item.title}</h1>
-              <p className="text-2xl font-bold text-orange-600">₦{item.price.toLocaleString()}</p>
+              <h1 className="text-2xl sm:text-3xl font-bold mb-2">{item.title}</h1>
+              <p className="text-xl sm:text-2xl font-bold text-orange-600">₦{item.price.toLocaleString()}</p>
             </div>
 
             <Card>
               <CardContent className="p-6">
-                <h2 className="text-xl font-semibold mb-4">Item Details</h2>
-                <dl className="space-y-4">
-                  <div>
-                    <dt className="text-sm font-medium text-gray-500">Category</dt>
-                    <dd className="mt-1 text-sm text-gray-900 capitalize">{item.category}</dd>
+                <h2 className="text-lg sm:text-xl font-semibold mb-4">Item Details</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="flex items-center">
+                    <span className="flex items-center text-sm font-medium text-gray-500">
+                      <Package className="h-4 w-4 mr-2" />
+                      Category
+                    </span>
+                    <span className="ml-2 text-sm text-gray-900 capitalize">{item.category}</span>
                   </div>
-                  <div>
-                    <dt className="text-sm font-medium text-gray-500">Condition</dt>
-                    <dd className="mt-1 text-sm text-gray-900">Used - Good</dd>
+                  <div className="flex items-center">
+                    <span className="flex items-center text-sm font-medium text-gray-500">
+                      <User className="h-4 w-4 mr-2" />
+                      Seller
+                    </span>
+                    <span className="ml-2 text-sm text-gray-900">{item.sellerName}</span>
                   </div>
-                  <div>
-                    <dt className="text-sm font-medium text-gray-500">Seller</dt>
-                    <dd className="mt-1 text-sm text-gray-900">{item.sellerName}</dd>
+                  <div className="flex items-center">
+                    <span className="flex items-center text-sm font-medium text-gray-500">
+                      <CheckCircle className="h-4 w-4 mr-2" />
+                      Status
+                    </span>
+                    <span className="ml-2 text-sm text-gray-900 capitalize">{item.status}</span>
                   </div>
-                  <div>
-                    <dt className="text-sm font-medium text-gray-500">Description</dt>
-                    <dd className="mt-1 text-sm text-gray-900 whitespace-pre-wrap">{item.description}</dd>
-                  </div>
-                </dl>
+                </div>
               </CardContent>
             </Card>
 
-            <Button
-              onClick={handleContactSeller}
-              size="lg"
-              className="w-full bg-green-600 hover:bg-green-700"
-            >
-              <MessageCircle className="h-5 w-5 mr-2" />
-              Contact Seller via WhatsApp
-            </Button>
+            <Card>
+              <CardContent className="p-6">
+                <h2 className="text-lg sm:text-xl font-semibold mb-4">Description</h2>
+                <p className="text-gray-600 whitespace-pre-wrap">{item.description}</p>
+              </CardContent>
+            </Card>
 
-            <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-              <h3 className="font-semibold text-orange-800 mb-2">Safety Tips</h3>
-              <ul className="list-disc list-inside text-sm text-orange-700 space-y-2">
-                <li>Meet in a public place</li>
-                <li>Verify the item before making payment</li>
-                <li>Don't share personal financial information</li>
-                <li>Trust your instincts</li>
-              </ul>
-            </div>
+            {item.status === "available" && (
+              <Button
+                size="lg"
+                className="w-full bg-green-600 hover:bg-green-700"
+                onClick={handleContactSeller}
+              >
+                <MessageCircle className="h-5 w-5 mr-2" />
+                Contact Seller on WhatsApp
+              </Button>
+            )}
           </div>
         </div>
       </div>

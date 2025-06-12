@@ -11,6 +11,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Plus, BookOpen, Laptop, Headphones, Shirt, Package, SlidersHorizontal } from "lucide-react"
 import type { MarketplaceItem } from "@/lib/types"
 import Link from "next/link"
+import { GridSettings } from "@/components/ui/grid-settings"
 
 export default function MarketplacePage() {
   const [items, setItems] = useState<MarketplaceItem[]>([])
@@ -20,6 +21,7 @@ export default function MarketplacePage() {
   const [selectedCategory, setSelectedCategory] = useState("all")
   const [priceFilter, setPriceFilter] = useState({ minPrice: 0, maxPrice: Number.POSITIVE_INFINITY })
   const [showFilters, setShowFilters] = useState(false)
+  const [gridSize, setGridSize] = useState("3x3")
 
   const categories = [
     { id: "all", name: "All Categories", icon: Package, color: "bg-gray-100" },
@@ -146,6 +148,21 @@ export default function MarketplacePage() {
     return () => document.removeEventListener("visibilitychange", handleVisibilityChange)
   }, [])
 
+  const getGridClasses = () => {
+    switch (gridSize) {
+      case "2x2":
+        return "grid-cols-1 sm:grid-cols-2"
+      case "3x3":
+        return "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
+      case "3x4":
+        return "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+      case "4x4":
+        return "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+      default:
+        return "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
+    }
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -163,14 +180,14 @@ export default function MarketplacePage() {
 
       {/* Hero Section with Background */}
       <div
-        className="relative bg-cover bg-center bg-no-repeat py-24"
+        className="relative bg-cover bg-center bg-no-repeat py-12 sm:py-24"
         style={{
           backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('/images/marketplace-bg.jpeg')`,
         }}
       >
         <div className="container mx-auto px-4 text-center">
-          <h1 className="text-4xl md:text-6xl font-bold text-white mb-4 animate-slide-in-up">Student Marketplace</h1>
-          <p className="text-xl text-white/90 mb-8 animate-slide-in-up" style={{ animationDelay: "0.2s" }}>
+          <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold text-white mb-4 animate-slide-in-up">Student Marketplace</h1>
+          <p className="text-lg sm:text-xl text-white/90 mb-8 animate-slide-in-up" style={{ animationDelay: "0.2s" }}>
             Buy and sell items within the student community safely and easily
           </p>
           <Button
@@ -191,7 +208,7 @@ export default function MarketplacePage() {
         {/* Category Widgets */}
         <div className="mb-8 animate-slide-in-up">
           <h2 className="text-2xl font-bold text-gray-900 mb-6">Browse by Category</h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 stagger-children">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 stagger-children">
             {categories.map((category, index) => {
               const Icon = category.icon
               return (
@@ -219,7 +236,7 @@ export default function MarketplacePage() {
 
         {/* Search and Filter Controls */}
         <div className="mb-8 space-y-4">
-          <div className="flex flex-col lg:flex-row gap-4">
+          <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
               <SearchBar
                 placeholder="Search items, descriptions, or sellers..."
@@ -227,10 +244,13 @@ export default function MarketplacePage() {
                 onChange={setSearchTerm}
               />
             </div>
-            <Button onClick={() => setShowFilters(!showFilters)} variant="outline" className="lg:w-auto w-full">
-              <SlidersHorizontal className="h-4 w-4 mr-2" />
-              {showFilters ? "Hide Filters" : "Show Filters"}
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <GridSettings gridSize={gridSize} onGridSizeChange={setGridSize} />
+              <Button onClick={() => setShowFilters(!showFilters)} variant="outline" className="w-full sm:w-auto">
+                <SlidersHorizontal className="h-4 w-4 mr-2" />
+                {showFilters ? "Hide Filters" : "Show Filters"}
+              </Button>
+            </div>
           </div>
 
           {/* Price Filter */}
@@ -279,7 +299,7 @@ export default function MarketplacePage() {
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 stagger-children">
+          <div className={`grid ${getGridClasses()} gap-4 sm:gap-6 stagger-children`}>
             {filteredItems.map((item, index) => (
               <div key={item.id} style={{ animationDelay: `${index * 0.1}s` }}>
                 <MarketplaceCard item={item} onStatusUpdate={fetchItems} />
