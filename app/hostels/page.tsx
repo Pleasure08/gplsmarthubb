@@ -21,6 +21,7 @@ export default function HostelsPage() {
   const [priceFilter, setPriceFilter] = useState({ minPrice: 0, maxPrice: Number.POSITIVE_INFINITY })
   const [locationFilter, setLocationFilter] = useState("")
   const [showFilters, setShowFilters] = useState(false)
+  const [showGridSettings, setShowGridSettings] = useState(false)
   const [gridSize, setGridSize] = useState("3x3")
 
   useEffect(() => {
@@ -196,26 +197,40 @@ export default function HostelsPage() {
             <div className="w-full md:w-1/3">
               <SearchBar value={searchTerm} onChange={setSearchTerm} placeholder="Search hostels..." />
             </div>
-            <div className="w-full md:w-1/3">
-              <LocationFilter value={locationFilter} onChange={setLocationFilter} />
-            </div>
-            <div className="w-full md:w-1/3">
-              <PriceRangeFilter
-                minPrice={priceFilter.minPrice}
-                maxPrice={priceFilter.maxPrice}
-                onChange={(min, max) => setPriceFilter({ minPrice: min, maxPrice: max })}
-              />
-            </div>
             <Button
               variant="ghost"
               size="icon"
               className="hover-scale"
               onClick={() => setShowFilters(!showFilters)}
+              title="Toggle Filters"
             >
               <SlidersHorizontal className="h-5 w-5" />
             </Button>
-            <GridSettings value={gridSize} onChange={setGridSize} />
+            <Button
+              variant="ghost"
+              size="icon"
+              className="hover-scale"
+              onClick={() => setShowGridSettings(!showGridSettings)}
+              title="Toggle Grid Settings"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-layout-grid"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>
+            </Button>
           </div>
+
+          {showFilters && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 animate-slide-in-up">
+              <LocationFilter onFilterChange={handleLocationFilterChange} />
+              <PriceRangeFilter
+                onFilterChange={handlePriceFilterChange}
+              />
+            </div>
+          )}
+
+          {showGridSettings && (
+            <div className="mt-4 animate-slide-in-up">
+              <GridSettings gridSize={gridSize} onGridSizeChange={setGridSize} />
+            </div>
+          )}
         </div>
       </div>
 

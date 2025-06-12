@@ -2,6 +2,26 @@ import { type NextRequest, NextResponse } from "next/server"
 import { addHostel } from "@/lib/google-sheets"
 import { uploadImage, uploadVideo } from "@/lib/cloudinary"
 
+const allowedOrigins = [
+  'https://gplsmarthub.com.ng',
+  'https://www.gplsmarthub.com.ng',
+];
+
+function setCORSHeaders(request: NextRequest, response: NextResponse) {
+  const origin = request.headers.get('Origin');
+  if (origin && allowedOrigins.includes(origin)) {
+    response.headers.set('Access-Control-Allow-Origin', origin);
+  } else {
+    // Optionally, if the origin is not allowed, you could set a default or deny explicitly.
+    // For production, you might want to consider explicit denial or more sophisticated logic.
+    // For now, if the origin is not allowed, the header won't be set by this function for stricter control.
+  }
+  response.headers.set('Access-Control-Allow-Methods', 'POST, GET, OPTIONS, DELETE, PUT');
+  response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  response.headers.set('Access-Control-Allow-Credentials', 'true');
+  return response;
+}
+
 export async function POST(request: NextRequest) {
   try {
     console.log("=== Admin Hostel Upload Started ===")
@@ -22,12 +42,14 @@ export async function POST(request: NextRequest) {
 
     if (imageCount === 0) {
       console.log("No images provided")
-      return NextResponse.json({ error: "At least one image is required" }, { status: 400 })
+      const response = NextResponse.json({ error: "At least one image is required" }, { status: 400 });
+      return setCORSHeaders(request, response);
     }
 
     if (imageCount > 3) {
       console.log("Too many images")
-      return NextResponse.json({ error: "Maximum 3 images allowed" }, { status: 400 })
+      const response = NextResponse.json({ error: "Maximum 3 images allowed" }, { status: 400 });
+      return setCORSHeaders(request, response);
     }
 
     // Verify Cloudinary configuration
@@ -38,7 +60,8 @@ export async function POST(request: NextRequest) {
         hasApiKey: Boolean(process.env.CLOUDINARY_API_KEY),
         hasApiSecret: Boolean(process.env.CLOUDINARY_API_SECRET)
       })
-      return NextResponse.json({ error: "Cloudinary configuration missing" }, { status: 500 })
+      const response = NextResponse.json({ error: "Cloudinary configuration missing" }, { status: 500 });
+      return setCORSHeaders(request, response);
     }
     console.log("Cloudinary configuration verified")
 
@@ -128,17 +151,27 @@ export async function POST(request: NextRequest) {
       })
     } else {
       console.error("Google Sheets returned error:", result.error)
-      return NextResponse.json({ error: result.error }, { status: 500 })
+      const response = NextResponse.json({ error: result.error }, { status: 500 });
+      return setCORSHeaders(request, response);
     }
   } catch (error) {
     console.error("=== Admin Hostel Upload Failed ===")
     console.error("Error details:", error)
-    return NextResponse.json(
+    const response = NextResponse.json(
       {
         error: "Failed to add hostel",
         details: error instanceof Error ? error.message : String(error),
       },
       { status: 500 },
-    )
+    );
+    return setCORSHeaders(request, response);
   }
+}
+
+export async function OPTIONS(request: NextRequest) {
+  const response = new NextResponse(null, {
+    status: 204, // No Content for successful preflight
+  });
+  response.headers.set('Access-Control-Max-Age', '86400'); // Cache preflight for 24 hours
+  return setCORSHeaders(request, response);
 }
