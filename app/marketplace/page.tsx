@@ -190,17 +190,28 @@ export default function MarketplacePage() {
           <p className="text-lg sm:text-xl text-white/90 mb-8 animate-slide-in-up" style={{ animationDelay: "0.2s" }}>
             Buy and sell items within the student community safely and easily
           </p>
-          <Button
-            asChild
-            size="lg"
-            className="bg-white text-orange-500 hover:bg-gray-100 hover-scale animate-slide-in-up"
-            style={{ animationDelay: "0.4s" }}
-          >
-            <Link href="/marketplace/sell">
-              <Plus className="h-5 w-5 mr-2" />
-              Start Selling
-            </Link>
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center animate-slide-in-up" style={{ animationDelay: "0.4s" }}>
+            <Button
+              asChild
+              size="lg"
+              className="bg-white text-orange-500 hover:bg-gray-100 hover-scale animate-float"
+            >
+              <Link href="/marketplace/sell">
+                <Plus className="h-5 w-5 mr-2" />
+                Start Selling
+              </Link>
+            </Button>
+            <Button
+              variant="outline"
+              size="lg"
+              className="border-2 border-white text-white hover:bg-white/10 hover-scale animate-float"
+              style={{ animationDelay: "0.2s" }}
+              onClick={() => setShowFilters(!showFilters)}
+            >
+              <SlidersHorizontal className="h-5 w-5 mr-2" />
+              Browse Categories
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -214,7 +225,7 @@ export default function MarketplacePage() {
               return (
                 <Card
                   key={category.id}
-                  className={`cursor-pointer hover-lift transition-all duration-300 animate-slide-in-up ${
+                  className={`cursor-pointer hover-lift transition-all duration-300 animate-scale-in ${
                     selectedCategory === category.id ? "ring-2 ring-orange-500" : ""
                   }`}
                   style={{ animationDelay: `${index * 0.1}s` }}
@@ -222,7 +233,7 @@ export default function MarketplacePage() {
                 >
                   <CardContent className="p-4 text-center">
                     <div
-                      className={`w-12 h-12 ${category.color} rounded-lg flex items-center justify-center mx-auto mb-2`}
+                      className={`w-12 h-12 ${category.color} rounded-lg flex items-center justify-center mx-auto mb-2 group-hover:scale-110 transition-transform duration-300`}
                     >
                       <Icon className="h-6 w-6 text-gray-700" />
                     </div>
@@ -234,79 +245,34 @@ export default function MarketplacePage() {
           </div>
         </div>
 
-        {/* Search and Filter Controls */}
-        <div className="mb-8 space-y-4">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1">
-              <SearchBar
-                placeholder="Search items, descriptions, or sellers..."
-                value={searchTerm}
-                onChange={setSearchTerm}
-              />
-            </div>
-            <div className="flex flex-col sm:flex-row gap-2">
+        {/* Search and Filter Section */}
+        <div className="bg-white py-8 shadow-lg rounded-lg animate-slide-in-up" style={{ animationDelay: "0.6s" }}>
+          <div className="container mx-auto px-4">
+            <div className="flex flex-col md:flex-row gap-4 items-center">
+              <div className="w-full md:w-1/2">
+                <SearchBar value={searchTerm} onChange={setSearchTerm} placeholder="Search items..." />
+              </div>
+              <div className="w-full md:w-1/2">
+                <PriceRangeFilter 
+                  onFilterChange={(filters) => setPriceFilter({ minPrice: filters.minPrice, maxPrice: filters.maxPrice })}
+                  title="Filter by Price"
+                />
+              </div>
               <GridSettings gridSize={gridSize} onGridSizeChange={setGridSize} />
-              <Button onClick={() => setShowFilters(!showFilters)} variant="outline" className="w-full sm:w-auto">
-                <SlidersHorizontal className="h-4 w-4 mr-2" />
-                {showFilters ? "Hide Filters" : "Show Filters"}
-              </Button>
             </div>
           </div>
-
-          {/* Price Filter */}
-          {showFilters && (
-            <div className="max-w-md animate-slide-in-up">
-              <PriceRangeFilter onFilterChange={handlePriceFilterChange} title="Filter by Item Price" />
-            </div>
-          )}
         </div>
 
-        {/* Results Summary */}
-        <div className="mb-6 animate-slide-in-up">
-          <p className="text-gray-600">
-            Showing {filteredItems.length} of {items.length} items
-            {(searchTerm ||
-              selectedCategory !== "all" ||
-              priceFilter.minPrice > 0 ||
-              priceFilter.maxPrice < Number.POSITIVE_INFINITY) && (
-              <span className="text-orange-600 font-medium"> (filtered)</span>
-            )}
-          </p>
-        </div>
-
-        {/* Items Grid */}
-        {filteredItems.length === 0 ? (
-          <div className="text-center py-16 animate-slide-in-up">
-            <Package className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-500 text-lg mb-4">No items found matching your criteria.</p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button
-                onClick={() => {
-                  setSearchTerm("")
-                  setSelectedCategory("all")
-                  setPriceFilter({ minPrice: 0, maxPrice: Number.POSITIVE_INFINITY })
-                }}
-                variant="outline"
-              >
-                Clear All Filters
-              </Button>
-              <Button asChild className="hover-scale">
-                <Link href="/marketplace/sell">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Be the first to sell
-                </Link>
-              </Button>
-            </div>
-          </div>
-        ) : (
-          <div className={`grid ${getGridClasses()} gap-4 sm:gap-6 stagger-children`}>
+        {/* Results Section */}
+        <div className="py-12">
+          <div className={`grid ${getGridClasses()} gap-6 stagger-children`}>
             {filteredItems.map((item, index) => (
-              <div key={item.id} style={{ animationDelay: `${index * 0.1}s` }}>
+              <div key={item.id} className="animate-scale-in" style={{ animationDelay: `${index * 0.1}s` }}>
                 <MarketplaceCard item={item} onStatusUpdate={fetchItems} />
               </div>
             ))}
           </div>
-        )}
+        </div>
       </div>
     </div>
   )

@@ -8,7 +8,7 @@ import { PriceRangeFilter } from "@/components/ui/price-range-filter"
 import { LocationFilter } from "@/components/ui/location-filter"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
 import { Button } from "@/components/ui/button"
-import { SlidersHorizontal } from "lucide-react"
+import { SlidersHorizontal, Building, MapPin } from "lucide-react"
 import { GridSettings } from "@/components/ui/grid-settings"
 import type { Hostel } from "@/lib/types"
 import { toast } from "@/components/ui/use-toast"
@@ -176,75 +176,58 @@ export default function HostelsPage() {
           <p className="text-lg sm:text-xl text-white/90 mb-8 animate-slide-in-up" style={{ animationDelay: "0.2s" }}>
             Discover verified student accommodations from our trusted partners
           </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center animate-slide-in-up" style={{ animationDelay: "0.4s" }}>
+            <Button className="bg-white text-orange-500 hover:bg-gray-100 hover-scale animate-float">
+              <Building className="h-5 w-5 mr-2" />
+              Browse All Hostels
+            </Button>
+            <Button variant="outline" className="border-2 border-white text-white hover:bg-white/10 hover-scale animate-float" style={{ animationDelay: "0.2s" }}>
+              <MapPin className="h-5 w-5 mr-2" />
+              Search by Location
+            </Button>
+          </div>
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-8 bg-gray-50">
-        {/* Search and Filter Controls */}
-        <div className="mb-8 space-y-4">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1">
-              <SearchBar
-                placeholder="Search by name, location, or description..."
-                value={searchTerm}
-                onChange={setSearchTerm}
+      {/* Search and Filter Section */}
+      <div className="bg-white py-8 shadow-lg relative z-10 animate-slide-in-up" style={{ animationDelay: "0.6s" }}>
+        <div className="container mx-auto px-4">
+          <div className="flex flex-col md:flex-row gap-4 items-center">
+            <div className="w-full md:w-1/3">
+              <SearchBar value={searchTerm} onChange={setSearchTerm} placeholder="Search hostels..." />
+            </div>
+            <div className="w-full md:w-1/3">
+              <LocationFilter value={locationFilter} onChange={setLocationFilter} />
+            </div>
+            <div className="w-full md:w-1/3">
+              <PriceRangeFilter
+                minPrice={priceFilter.minPrice}
+                maxPrice={priceFilter.maxPrice}
+                onChange={(min, max) => setPriceFilter({ minPrice: min, maxPrice: max })}
               />
             </div>
-            <div className="flex flex-col sm:flex-row gap-2">
-              <GridSettings gridSize={gridSize} onGridSizeChange={setGridSize} />
-              <Button onClick={() => setShowFilters(!showFilters)} variant="outline" className="w-full sm:w-auto">
-                <SlidersHorizontal className="h-4 w-4 mr-2" />
-                {showFilters ? "Hide Filters" : "Show Filters"}
-              </Button>
-            </div>
-          </div>
-
-          {/* Filters */}
-          {showFilters && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 animate-slide-in-up">
-              <PriceRangeFilter onFilterChange={handlePriceFilterChange} title="Filter by Annual Price" />
-              <LocationFilter
-                onFilterChange={handleLocationFilterChange}
-                placeholder="Enter location (e.g., Ikeja, Lagos)"
-              />
-            </div>
-          )}
-        </div>
-
-        {/* Results Summary */}
-        <div className="mb-6 animate-slide-in-up">
-          <p className="text-gray-600">
-            Showing {filteredHostels.length} of {hostels.length} hostels
-            {(searchTerm ||
-              priceFilter.minPrice > 0 ||
-              priceFilter.maxPrice < Number.POSITIVE_INFINITY ||
-              locationFilter) && <span className="text-orange-600 font-medium"> (filtered)</span>}
-          </p>
-        </div>
-
-        {filteredHostels.length === 0 ? (
-          <div className="text-center py-16 animate-slide-in-up">
-            <p className="text-gray-500 text-lg mb-4">No hostels found matching your criteria.</p>
             <Button
-              onClick={() => {
-                setSearchTerm("")
-                setPriceFilter({ minPrice: 0, maxPrice: Number.POSITIVE_INFINITY })
-                setLocationFilter("")
-              }}
-              variant="outline"
+              variant="ghost"
+              size="icon"
+              className="hover-scale"
+              onClick={() => setShowFilters(!showFilters)}
             >
-              Clear All Filters
+              <SlidersHorizontal className="h-5 w-5" />
             </Button>
+            <GridSettings value={gridSize} onChange={setGridSize} />
           </div>
-        ) : (
-          <div className={`grid ${getGridClasses()} gap-4 sm:gap-6 stagger-children`}>
-            {filteredHostels.map((hostel, index) => (
-              <div key={hostel.id} style={{ animationDelay: `${index * 0.1}s` }}>
-                <HostelCard hostel={hostel} />
-              </div>
-            ))}
-          </div>
-        )}
+        </div>
+      </div>
+
+      {/* Results Section */}
+      <div className="container mx-auto px-4 py-12">
+        <div className={`grid ${getGridClasses()} gap-6 stagger-children`}>
+          {filteredHostels.map((hostel, index) => (
+            <div key={hostel.id} className="animate-scale-in" style={{ animationDelay: `${index * 0.1}s` }}>
+              <HostelCard hostel={hostel} />
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   )
