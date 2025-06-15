@@ -36,10 +36,14 @@ export async function getGoogleSheet(sheetId: string) {
     console.log("Private key length:", privateKey.length)
     console.log("Private key starts with:", privateKey.substring(0, 50))
 
-    // Format the private key properly
-    const formattedPrivateKey = privateKey.replace(/\\n/g, "\n")
+    // Format the private key properly - handle both production and development environments
+    const formattedPrivateKey = privateKey
+      .replace(/\\n/g, "\n")  // Handle Vercel's environment
+      .replace(/\\\\n/g, "\n") // Handle double-escaped newlines
+      .replace(/"/g, "")      // Remove any quotes
+      .trim()                 // Remove any extra whitespace
 
-    // Create JWT client
+    // Create JWT client with explicit type
     const jwt = new JWT({
       email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
       key: formattedPrivateKey,

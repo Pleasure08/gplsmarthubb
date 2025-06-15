@@ -12,6 +12,25 @@ import { Plus, BookOpen, Laptop, Headphones, Shirt, Package, SlidersHorizontal }
 import type { MarketplaceItem } from "@/lib/types"
 import Link from "next/link"
 import { GridSettings } from "@/components/ui/grid-settings"
+import { ChangeEvent } from "react"
+
+type ItemStatus = "pending" | "available" | "sold"
+
+interface GridSettingsProps {
+  gridSize: string
+  onGridSizeChange: (size: string) => void
+}
+
+interface PriceRangeFilterProps {
+  onFilterChange: (filters: { minPrice: number; maxPrice: number }) => void
+  placeholder?: string
+  title?: string
+}
+
+interface MarketplaceCardProps {
+  item: MarketplaceItem
+  onStatusUpdate: () => void
+}
 
 export default function MarketplacePage() {
   const [items, setItems] = useState<MarketplaceItem[]>([])
@@ -152,15 +171,15 @@ export default function MarketplacePage() {
   const getGridClasses = () => {
     switch (gridSize) {
       case "2x2":
-        return "grid-cols-1 sm:grid-cols-2"
+        return "grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6"
       case "3x3":
-        return "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
+        return "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6"
       case "3x4":
-        return "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+        return "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6"
       case "4x4":
-        return "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+        return "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6"
       default:
-        return "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
+        return "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6"
     }
   }
 
@@ -168,7 +187,7 @@ export default function MarketplacePage() {
     return (
       <div className="min-h-screen bg-gray-50">
         <Header />
-        <div className="container mx-auto px-4 py-16">
+        <div className="container mx-auto px-4 py-8 sm:py-16">
           <LoadingSpinner />
         </div>
       </div>
@@ -181,86 +200,91 @@ export default function MarketplacePage() {
 
       {/* Hero Section with Background */}
       <div
-        className="relative bg-cover bg-center bg-no-repeat py-12 sm:py-24"
+        className="relative bg-cover bg-center bg-no-repeat py-8 sm:py-16 md:py-24"
         style={{
           backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('/images/marketplace-bg.jpeg')`,
         }}
       >
         <div className="container mx-auto px-4 text-center">
-          <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold text-white mb-4 animate-slide-in-up">Student Marketplace</h1>
-          <p className="text-lg sm:text-xl text-white/90 mb-8 animate-slide-in-up" style={{ animationDelay: "0.2s" }}>
+          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-6xl font-bold text-white mb-3 sm:mb-4 animate-slide-in-up">Student Marketplace</h1>
+          <p className="text-base sm:text-lg md:text-xl text-white/90 mb-6 sm:mb-8 animate-slide-in-up" style={{ animationDelay: "0.2s" }}>
             Buy and sell items within the student community safely and easily
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center animate-slide-in-up" style={{ animationDelay: "0.4s" }}>
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center animate-slide-in-up" style={{ animationDelay: "0.4s" }}>
             <Button
               asChild
               size="lg"
-              className="bg-white text-orange-500 hover:bg-gray-100 hover-scale animate-float"
+              className="bg-white text-orange-500 hover:bg-gray-100 hover-scale animate-float w-full sm:w-auto"
             >
               <Link href="/marketplace/sell">
-                <Plus className="h-5 w-5 mr-2" />
-                Start Selling
+                <Plus className="mr-2 h-5 w-5" />
+                Sell an Item
               </Link>
             </Button>
           </div>
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-8 bg-gray-50">
+      <div className="container mx-auto px-4 py-6 sm:py-8 bg-gray-50">
         {/* Search and Filter Section */}
-        <div className="bg-white py-8 shadow-lg rounded-lg animate-slide-in-up" style={{ animationDelay: "0.6s" }}>
-          <div className="container mx-auto px-4">
-            <div className="flex flex-col md:flex-row gap-4 items-center">
-              <div className="w-full md:w-1/2">
-                <SearchBar value={searchTerm} onChange={setSearchTerm} placeholder="Search items..." />
-              </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="hover-scale"
-                onClick={() => setShowFilters(!showFilters)}
-                title="Toggle Price Filter"
-              >
-                <SlidersHorizontal className="h-5 w-5" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="hover-scale"
-                onClick={() => setShowGridSettings(!showGridSettings)}
-                title="Toggle Grid Settings"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-layout-grid"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>
-              </Button>
+        <div className="mb-6 sm:mb-8 animate-slide-in-up">
+          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+            <div className="w-full sm:w-auto">
+              <SearchBar
+                value={searchTerm}
+                onChange={(value: string) => setSearchTerm(value)}
+                placeholder="Search items..."
+                className="w-full sm:w-[300px]"
+              />
             </div>
-
-            {showFilters && (
-              <div className="mt-4 animate-slide-in-up">
-                <PriceRangeFilter
-                  onFilterChange={handlePriceFilterChange}
-                  title="Filter by Price"
-                />
-              </div>
-            )}
-
-            {showGridSettings && (
-              <div className="mt-4 animate-slide-in-up">
-                <GridSettings gridSize={gridSize} onGridSizeChange={setGridSize} />
-              </div>
-            )}
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto">
+              <Button
+                variant="outline"
+                onClick={() => setShowFilters(!showFilters)}
+                className="w-full sm:w-auto"
+              >
+                <SlidersHorizontal className="mr-2 h-4 w-4" />
+                {showFilters ? "Hide Filters" : "Show Filters"}
+              </Button>
+              <GridSettings
+                gridSize={gridSize}
+                onGridSizeChange={setGridSize}
+              />
+            </div>
           </div>
+
+          {/* Price Filter */}
+          {showFilters && (
+            <div className="mt-4 p-4 bg-white rounded-lg shadow-sm">
+              <PriceRangeFilter
+                onFilterChange={handlePriceFilterChange}
+                placeholder="Price Range"
+                title="Filter by Price"
+              />
+            </div>
+          )}
         </div>
 
-        {/* Results Section */}
-        <div className="py-12">
-          <div className={`grid ${getGridClasses()} gap-6 stagger-children`}>
-            {filteredItems.map((item, index) => (
-              <div key={item.id} className="animate-scale-in" style={{ animationDelay: `${index * 0.1}s` }}>
-                <MarketplaceCard item={item} onStatusUpdate={fetchItems} />
-              </div>
-            ))}
-          </div>
+        {/* Items Grid */}
+        <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 animate-fade-in`}>
+          {filteredItems.map((item) => (
+            <MarketplaceCard 
+              key={item.id} 
+              item={item} 
+              onStatusUpdate={() => {
+                // Refresh the items list
+                fetchItems()
+              }}
+            />
+          ))}
         </div>
+
+        {/* No Results Message */}
+        {filteredItems.length === 0 && !loading && (
+          <div className="text-center py-12">
+            <p className="text-gray-500 text-lg">No items found matching your criteria.</p>
+          </div>
+        )}
       </div>
     </div>
   )

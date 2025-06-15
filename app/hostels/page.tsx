@@ -165,20 +165,20 @@ export default function HostelsPage() {
 
       {/* Hero Section with Background */}
       <div
-        className="relative bg-cover bg-center bg-no-repeat py-12 sm:py-24"
+        className="relative bg-cover bg-center bg-no-repeat py-8 sm:py-16 md:py-24"
         style={{
-          backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('/images/hostel-bg.jpeg')`,
+          backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('/images/hostel-bg.jpeg')`,
         }}
       >
         <div className="container mx-auto px-4 text-center">
-          <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold text-white mb-4 animate-slide-in-up">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-6xl font-bold text-white mb-3 sm:mb-4 animate-slide-in-up">
             Find Your Perfect Hostel
           </h1>
-          <p className="text-lg sm:text-xl text-white/90 mb-8 animate-slide-in-up" style={{ animationDelay: "0.2s" }}>
+          <p className="text-base sm:text-lg md:text-xl text-white/90 mb-6 sm:mb-8 animate-slide-in-up" style={{ animationDelay: "0.2s" }}>
             Discover verified student accommodations from our trusted partners
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center animate-slide-in-up" style={{ animationDelay: "0.4s" }}>
-            <Button className="bg-white text-orange-500 hover:bg-gray-100 hover-scale animate-float">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center animate-slide-in-up" style={{ animationDelay: "0.4s" }}>
+            <Button className="bg-white text-orange-500 hover:bg-gray-100 hover-scale animate-float w-full sm:w-auto">
               <Building className="h-5 w-5 mr-2" />
               Browse All Hostels
             </Button>
@@ -187,58 +187,64 @@ export default function HostelsPage() {
       </div>
 
       {/* Search and Filter Section */}
-      <div className="bg-white py-8 shadow-lg relative z-10 animate-slide-in-up" style={{ animationDelay: "0.6s" }}>
+      <div className="bg-white py-6 sm:py-8 shadow-lg relative z-10 animate-slide-in-up" style={{ animationDelay: "0.6s" }}>
         <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row gap-4 items-center">
-            <div className="w-full md:w-1/3">
-              <SearchBar value={searchTerm} onChange={setSearchTerm} placeholder="Search hostels..." />
-            </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="hover-scale"
-              onClick={() => setShowFilters(!showFilters)}
-              title="Toggle Filters"
-            >
-              <SlidersHorizontal className="h-5 w-5" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="hover-scale"
-              onClick={() => setShowGridSettings(!showGridSettings)}
-              title="Toggle Grid Settings"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-layout-grid"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>
-            </Button>
-          </div>
-
-          {showFilters && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 animate-slide-in-up">
-              <LocationFilter onFilterChange={handleLocationFilterChange} />
-              <PriceRangeFilter
-                onFilterChange={handlePriceFilterChange}
+          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+            <div className="w-full sm:w-auto">
+              <SearchBar 
+                value={searchTerm} 
+                onChange={(value: string) => setSearchTerm(value)} 
+                placeholder="Search hostels..." 
+                className="w-full sm:w-[300px]"
               />
             </div>
-          )}
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto">
+              <Button
+                variant="outline"
+                onClick={() => setShowFilters(!showFilters)}
+                className="w-full sm:w-auto"
+              >
+                <SlidersHorizontal className="mr-2 h-4 w-4" />
+                {showFilters ? "Hide Filters" : "Show Filters"}
+              </Button>
+              <GridSettings
+                gridSize={gridSize}
+                onGridSizeChange={setGridSize}
+              />
+            </div>
+          </div>
 
-          {showGridSettings && (
-            <div className="mt-4 animate-slide-in-up">
-              <GridSettings gridSize={gridSize} onGridSizeChange={setGridSize} />
+          {/* Filters */}
+          {showFilters && (
+            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <PriceRangeFilter
+                onFilterChange={handlePriceFilterChange}
+                placeholder="Price Range"
+                title="Filter by Price"
+              />
+              <LocationFilter
+                onFilterChange={handleLocationFilterChange}
+                placeholder="Enter location..."
+              />
             </div>
           )}
         </div>
       </div>
 
-      {/* Results Section */}
-      <div className="container mx-auto px-4 py-12">
-        <div className={`grid ${getGridClasses()} gap-6 stagger-children`}>
-          {filteredHostels.map((hostel, index) => (
-            <div key={hostel.id} className="animate-scale-in" style={{ animationDelay: `${index * 0.1}s` }}>
-              <HostelCard hostel={hostel} />
-            </div>
+      {/* Hostels Grid */}
+      <div className="container mx-auto px-4 py-6 sm:py-8 bg-gray-50">
+        <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 animate-fade-in`}>
+          {filteredHostels.map((hostel) => (
+            <HostelCard key={hostel.id} hostel={hostel} />
           ))}
         </div>
+
+        {/* No Results Message */}
+        {filteredHostels.length === 0 && !loading && (
+          <div className="text-center py-12">
+            <p className="text-gray-500 text-lg">No hostels found matching your criteria.</p>
+          </div>
+        )}
       </div>
     </div>
   )
