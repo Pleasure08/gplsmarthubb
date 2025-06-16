@@ -58,6 +58,70 @@ export async function getGoogleSheet(sheetId: string) {
   }
 }
 
+// Helper function to create a new sheet
+async function createSheet(sheets: any, sheetId: string, title: string, headers: string[]) {
+  try {
+    // Create the sheet
+    await sheets.spreadsheets.batchUpdate({
+      spreadsheetId: sheetId,
+      requestBody: {
+        requests: [{
+          addSheet: {
+            properties: {
+              title: title,
+              gridProperties: {
+                rowCount: 1000,
+                columnCount: headers.length
+              }
+            }
+          }
+        }]
+      }
+    });
+
+    // Add headers
+    await sheets.spreadsheets.values.update({
+      spreadsheetId: sheetId,
+      range: `${title}!A1:${String.fromCharCode(65 + headers.length - 1)}1`,
+      valueInputOption: "RAW",
+      requestBody: {
+        values: [headers]
+      }
+    });
+
+    console.log(`Created new ${title} sheet with headers`);
+    return true;
+  } catch (error) {
+    console.error(`Error creating ${title} sheet:`, error);
+    return false;
+  }
+}
+
+// Helper function to get or create a sheet
+async function getOrCreateSheet(sheets: any, sheetId: string, title: string, headers: string[]) {
+  try {
+    // Get the sheet
+    const response = await sheets.spreadsheets.get({
+      spreadsheetId: sheetId,
+    });
+
+    // Find the sheet
+    const sheet = response.data.sheets?.find(
+      (s: any) => s.properties?.title === title
+    );
+
+    if (!sheet) {
+      // Create the sheet if it doesn't exist
+      return await createSheet(sheets, sheetId, title, headers);
+    }
+
+    return true;
+  } catch (error) {
+    console.error(`Error getting/creating ${title} sheet:`, error);
+    return false;
+  }
+}
+
 export async function getHostels() {
   try {
     console.log("Starting getHostels function...")
@@ -136,20 +200,20 @@ export async function getHostels() {
       const videoPublicId = row.get("Video Public ID") || undefined
 
       const hostelData = {
-        id: row.get("ID"),
-        name: row.get("Name"),
-        location: row.get("Location"),
-        pricePerYear: Number.parseInt(row.get("Price Per Year")),
+          id: row.get("ID"),
+          name: row.get("Name"),
+          location: row.get("Location"),
+          pricePerYear: Number.parseInt(row.get("Price Per Year")),
         imageUrls: imageUrls,
         videoUrl: videoUrl,
         imagePublicIds: imagePublicIds,
         videoPublicId: videoPublicId,
-        whatsappContact: row.get("WhatsApp Contact"),
-        description: row.get("Description"),
-        status: row.get("Status"),
-        dateAdded: row.get("Date Added"),
-        views: Number.parseInt(row.get("Views") || "0"),
-      }
+          whatsappContact: row.get("WhatsApp Contact"),
+          description: row.get("Description"),
+          status: row.get("Status"),
+          dateAdded: row.get("Date Added"),
+          views: Number.parseInt(row.get("Views") || "0"),
+        }
 
       console.log(`Processed hostel data for ${hostelData.id}:`, {
         name: hostelData.name,
@@ -158,7 +222,7 @@ export async function getHostels() {
       })
 
       return hostelData
-    })
+      })
   } catch (error) {
     console.error("Error in getHostels:", error)
     if (error instanceof Error) {
@@ -230,7 +294,7 @@ export async function getMarketplaceItems() {
         .map((id: string) => id.trim())
         .filter((id: string) => id.length > 0);
 
-      return {
+        return {
         id: item.ID,
         title: item.Title,
         category: item.Category,
@@ -263,28 +327,84 @@ export async function getMarketplaceItems() {
 
 export async function addHostel(hostelData: any) {
   try {
-    console.log("Adding hostel to Google Sheets:", hostelData)
-    const doc = await getGoogleSheet(process.env.GOOGLE_SHEET_ID!)
-    const sheet = doc.sheetsByIndex[0] // Hostels sheet
+    console.log("Starting addHostel function...")
+    const sheets = await getGoogleSheet(process.env.GOOGLE_SHEET_ID!)
+    
+    // Define headers
+    const headers = [
+      "ID",
+      "Name",
+      "Location",
+      "Price Per Year",
+      "Image URLs",
+      "Image Public IDs",
+      "Video URL",
+      "Video Public ID",
+      "WhatsApp Contact",
+      "Description",
+      "Status",
+      "Date Added",
+      "Views"
+    ];
 
-    // Make sure the sheet exists
-    if (!sheet) {
-      console.error("Hostels sheet not found")
-      return { success: false, error: "Hostels sheet not found" }
+    // Get or create the hostels sheet
+    const sheetExists = await getOrCreateSheet(
+      sheets,
+      process.env.GOOGLE_SHEET_ID!,
+      "Hostels",
+      headers
+    );
+
+    if (!sheetExists) {
+      throw new Error("Failed to create or access Hostels sheet");
     }
 
-    // Ensure status is set to 'available' for new hostels
-    const dataToAdd = {
-      ...hostelData,
-      Status: hostelData.Status || "available",
-    }
+    // Prepare the row data
+    const rowData = [
+      hostelData.ID,
+      hostelData.Name,
+      hostelData.Location,
+      hostelData["Price Per Year"],
+      hostelData["Image URLs"],
+      hostelData["Image Public IDs"],
+      hostelData["Video URL"] || "",
+      hostelData["Video Public ID"] || "",
+      hostelData["WhatsApp Contact"],
+      hostelData.Description,
+      hostelData.Status,
+      hostelData["Date Added"],
+      hostelData.Views || "0"
+    ];
 
-    await sheet.addRow(dataToAdd)
-    console.log("Hostel added successfully to Google Sheets")
-    return { success: true }
+    // Append the new row
+    await sheets.spreadsheets.values.append({
+      spreadsheetId: process.env.GOOGLE_SHEET_ID!,
+      range: "Hostels!A:M",
+      valueInputOption: "RAW",
+      requestBody: {
+        values: [rowData]
+      }
+    });
+
+    console.log("Successfully added hostel:", {
+      id: hostelData.ID,
+      name: hostelData.Name
+    });
+
+    return { success: true };
   } catch (error) {
-    console.error("Error adding hostel:", error)
-    return { success: false, error: String(error) }
+    console.error("Error adding hostel:", error);
+    if (error instanceof Error) {
+      console.error("Error details:", {
+        name: error.name,
+        message: error.message,
+        stack: error.stack
+      });
+    }
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : "Failed to add hostel" 
+    };
   }
 }
 
@@ -293,58 +413,32 @@ export async function addMarketplaceItem(itemData: any) {
     console.log("Starting addMarketplaceItem function...")
     const sheets = await getGoogleSheet(process.env.GOOGLE_SHEET_ID!)
     
-    // Get the marketplace sheet
-    const response = await sheets.spreadsheets.get({
-      spreadsheetId: process.env.GOOGLE_SHEET_ID!,
-    });
+    // Define headers
+    const headers = [
+      "ID",
+      "Title",
+      "Category",
+      "Image URLs",
+      "Image Public IDs",
+      "Description",
+      "Price",
+      "WhatsApp Number",
+      "Status",
+      "Approval Status",
+      "Date Posted",
+      "Seller Name"
+    ];
 
-    // Find the marketplace sheet
-    const marketplaceSheet = response.data.sheets?.find(
-      sheet => sheet.properties?.title === "Marketplace"
+    // Get or create the marketplace sheet
+    const sheetExists = await getOrCreateSheet(
+      sheets,
+      process.env.GOOGLE_SHEET_ID!,
+      "Marketplace",
+      headers
     );
 
-    if (!marketplaceSheet) {
-      // Create marketplace sheet if it doesn't exist
-      console.log("Creating new Marketplace sheet...")
-      await sheets.spreadsheets.batchUpdate({
-        spreadsheetId: process.env.GOOGLE_SHEET_ID!,
-        requestBody: {
-          requests: [{
-            addSheet: {
-              properties: {
-                title: "Marketplace",
-                gridProperties: {
-                  rowCount: 1000,
-                  columnCount: 12
-                }
-              }
-            }
-          }]
-        }
-      });
-
-      // Add headers
-      await sheets.spreadsheets.values.update({
-        spreadsheetId: process.env.GOOGLE_SHEET_ID!,
-        range: "Marketplace!A1:L1",
-        valueInputOption: "RAW",
-        requestBody: {
-          values: [[
-            "ID",
-            "Title",
-            "Category",
-            "Image URLs",
-            "Image Public IDs",
-            "Description",
-            "Price",
-            "WhatsApp Number",
-            "Status",
-            "Approval Status",
-            "Date Posted",
-            "Seller Name"
-          ]]
-        }
-      });
+    if (!sheetExists) {
+      throw new Error("Failed to create or access Marketplace sheet");
     }
 
     // Prepare the row data

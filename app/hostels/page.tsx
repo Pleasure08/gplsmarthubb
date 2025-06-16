@@ -60,7 +60,7 @@ export default function HostelsPage() {
           throw new Error(`HTTP error! status: ${response.status}`)
         }
 
-        const data = await response.json()
+      const data = await response.json()
         console.log("Fetched hostels:", data)
         
         if (!Array.isArray(data)) {
@@ -68,11 +68,11 @@ export default function HostelsPage() {
           throw new Error("Invalid data format received from server")
         }
 
-        setHostels(data)
+      setHostels(data)
         console.log(`Successfully loaded ${data.length} hostels`)
         break // Success, exit the retry loop
-      } catch (error) {
-        console.error("Error fetching hostels:", error)
+    } catch (error) {
+      console.error("Error fetching hostels:", error)
         if (error instanceof Error) {
           console.error("Error details:", {
             message: error.message,
@@ -93,8 +93,8 @@ export default function HostelsPage() {
           // Wait before retrying (exponential backoff)
           await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, retryCount)))
         }
-      } finally {
-        setLoading(false)
+    } finally {
+      setLoading(false)
       }
     }
   }
@@ -191,8 +191,8 @@ export default function HostelsPage() {
         <div className="container mx-auto px-4">
           <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
             <div className="w-full sm:w-auto">
-              <SearchBar 
-                value={searchTerm} 
+              <SearchBar
+                value={searchTerm}
                 onChange={(value: string) => setSearchTerm(value)} 
                 placeholder="Search hostels..." 
                 className="w-full sm:w-[300px]"
@@ -205,8 +205,8 @@ export default function HostelsPage() {
                 className="w-full sm:w-auto"
               >
                 <SlidersHorizontal className="mr-2 h-4 w-4" />
-                {showFilters ? "Hide Filters" : "Show Filters"}
-              </Button>
+              {showFilters ? "Hide Filters" : "Show Filters"}
+            </Button>
               <GridSettings
                 gridSize={gridSize}
                 onGridSizeChange={setGridSize}
@@ -229,7 +229,7 @@ export default function HostelsPage() {
             </div>
           )}
         </div>
-      </div>
+        </div>
 
       {/* Hostels Grid */}
       <div className="container mx-auto px-4 py-6 sm:py-8 bg-gray-50">

@@ -39,13 +39,13 @@ export function HostelCard({ hostel }: HostelCardProps) {
     <Card className="group overflow-hidden hover-lift">
       <Link href={`/hostels/${hostel.id}`} className="block">
         <div className="relative aspect-video overflow-hidden bg-gray-100">
-          <Image
+        <Image
             src={hostel.imageUrls[0] || "/placeholder.svg?height=200&width=400"}
-            alt={hostel.name}
-            fill
+          alt={hostel.name}
+          fill
             className="object-cover transition-transform group-hover:scale-105"
-            priority={true}
-          />
+          priority={true}
+        />
           {hostel.status === "full" && (
             <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
               <span className="text-white font-bold text-lg">FULLY BOOKED</span>
@@ -80,8 +80,8 @@ export function HostelCard({ hostel }: HostelCardProps) {
               onClick={handleWhatsAppContact}
             >
               <MessageCircle className="h-4 w-4 mr-1" />
-              Contact
-            </Button>
+            Contact
+          </Button>
           )}
         </div>
       </CardContent>

@@ -74,10 +74,10 @@ export function MarketplaceCard({ item, onStatusUpdate }: MarketplaceCardProps) 
     <Card className="group overflow-hidden hover-lift">
       <Link href={`/marketplace/item/${item.id}`} className="block">
         <div className="relative aspect-square overflow-hidden bg-gray-100">
-          <Image
+        <Image
             src={item.imageUrl || "/placeholder.svg"}
-            alt={item.title}
-            fill
+          alt={item.title}
+          fill
             className="object-cover transition-transform group-hover:scale-105"
             sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
           />
@@ -100,16 +100,16 @@ export function MarketplaceCard({ item, onStatusUpdate }: MarketplaceCardProps) 
           <div className="flex items-center text-gray-500">
             <MapPin className="h-4 w-4 mr-1 flex-shrink-0" />
             <span className="text-sm truncate max-w-[150px] sm:max-w-[200px]">{item.category}</span>
-          </div>
+        </div>
           {item.status === "available" && (
-            <Button
+          <Button
               size="sm"
               className="bg-green-600 hover:bg-green-700 w-full sm:w-auto"
-              onClick={handleWhatsAppContact}
-            >
+            onClick={handleWhatsAppContact}
+          >
               <MessageCircle className="h-4 w-4 mr-1" />
-              Contact
-            </Button>
+            Contact
+          </Button>
           )}
         </div>
       </CardContent>

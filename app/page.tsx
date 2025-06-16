@@ -221,7 +221,7 @@ export default function HomePage() {
                 </li>
                 <li className="flex items-center hover-scale">
                   <Phone className="h-4 w-4 mr-2" />
-                  +234 815 351 8887
+                    +234 815 351 8887
                 </li>
                 <li className="flex items-center hover-scale">
                   <MapPin className="h-4 w-4 mr-2" />
