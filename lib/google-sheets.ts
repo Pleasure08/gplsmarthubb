@@ -174,91 +174,90 @@ export async function getHostels() {
 
 export async function getMarketplaceItems() {
   try {
-    const doc = await getGoogleSheet(process.env.GOOGLE_SHEET_ID!)
+    console.log("Starting getMarketplaceItems function...")
+    const sheets = await getGoogleSheet(process.env.GOOGLE_SHEET_ID!)
     
-    // Get or create the marketplace sheet
-    let sheet = doc.sheetsByIndex[1] // Marketplace sheet
-    
-    // Define required headers
-    const requiredHeaders = [
-      "ID",
-      "Title",
-      "Category",
-      "Image URLs",
-      "Image Public IDs",
-      "Description",
-      "Price",
-      "WhatsApp Number",
-      "Status",
-      "Approval Status",
-      "Date Posted",
-      "Seller Name"
-    ]
+    // Get the marketplace sheet
+    const response = await sheets.spreadsheets.get({
+      spreadsheetId: process.env.GOOGLE_SHEET_ID!,
+    });
 
-    // Create sheet if it doesn't exist
-    if (!sheet) {
-      console.log("Creating new Marketplace sheet...")
-      sheet = await doc.addSheet({ 
-        title: "Marketplace",
-        headerValues: requiredHeaders
-      })
-      await sheet.loadHeaderRow()
-      console.log("Created new Marketplace sheet with headers")
-      return [] // Return empty array since sheet is new
+    // Find the marketplace sheet
+    const marketplaceSheet = response.data.sheets?.find(
+      sheet => sheet.properties?.title === "Marketplace"
+    );
+
+    if (!marketplaceSheet) {
+      console.log("Marketplace sheet not found, returning empty array")
+      return [];
     }
 
-    // Load and verify headers
-    await sheet.loadHeaderRow()
-    const currentHeaders = sheet.headerValues || []
-    
-    // Update headers if needed
-    if (currentHeaders.length === 0 || !requiredHeaders.every(header => currentHeaders.includes(header))) {
-      console.log("Updating Marketplace sheet headers...")
-      await sheet.setHeaderRow(requiredHeaders)
-      await sheet.loadHeaderRow()
+    // Get the values from the sheet
+    const valuesResponse = await sheets.spreadsheets.values.get({
+      spreadsheetId: process.env.GOOGLE_SHEET_ID!,
+      range: "Marketplace!A:L",
+    });
+
+    const rows = valuesResponse.data.values || [];
+    console.log(`Found ${rows.length} rows in marketplace sheet`);
+
+    if (rows.length <= 1) {
+      console.log("No data rows found in marketplace sheet");
+      return [];
     }
 
-    // Get rows
-    const rows = await sheet.getRows()
+    // Get headers from first row
+    const headers = rows[0];
+    console.log("Marketplace sheet headers:", headers);
 
-    return rows.map((row) => {
-      const imageUrls = (row.get("Image URLs") || "")
+    // Process data rows
+    const items = rows.slice(1).map((row, index) => {
+      // Create an object with header keys
+      const item: any = {};
+      headers.forEach((header, i) => {
+        item[header] = row[i] || "";
+      });
+
+      // Process image URLs
+      const imageUrls = (item["Image URLs"] || "")
         .split(",")
         .map((url: string) => url.trim())
-        .filter((url: string) => url.length > 0)
+        .filter((url: string) => url.length > 0);
 
-      const imagePublicIds = (row.get("Image Public IDs") || "")
+      // Process image public IDs
+      const imagePublicIds = (item["Image Public IDs"] || "")
         .split(",")
         .map((id: string) => id.trim())
-        .filter((id: string) => id.length > 0)
+        .filter((id: string) => id.length > 0);
 
       return {
-        id: row.get("ID"),
-        title: row.get("Title"),
-        category: row.get("Category"),
-        imageUrl: imageUrls[0] || "", // Use first image as main
-        imageUrls: imageUrls, // All images
-        imagePublicId: imagePublicIds[0] || "",
+        id: item.ID,
+        title: item.Title,
+        category: item.Category,
+        imageUrls: imageUrls,
         imagePublicIds: imagePublicIds,
-        description: row.get("Description"),
-        price: Number.parseInt(row.get("Price")),
-        whatsappNumber: row.get("WhatsApp Number"),
-        status: row.get("Status"),
-        approvalStatus: row.get("Approval Status") || "pending", // Default to pending if not set
-        datePosted: row.get("Date Posted"),
-        sellerName: row.get("Seller Name"),
-      }
-    })
+        description: item.Description,
+        price: Number(item.Price) || 0,
+        whatsappNumber: item["WhatsApp Number"],
+        status: item.Status,
+        approvalStatus: item["Approval Status"],
+        datePosted: item["Date Posted"],
+        sellerName: item["Seller Name"],
+      };
+    });
+
+    console.log(`Processed ${items.length} marketplace items`);
+    return items;
   } catch (error) {
-    console.error("Error fetching marketplace items:", error)
+    console.error("Error in getMarketplaceItems:", error);
     if (error instanceof Error) {
       console.error("Error details:", {
         name: error.name,
         message: error.message,
         stack: error.stack
-      })
+      });
     }
-    return []
+    return [];
   }
 }
 
@@ -291,93 +290,108 @@ export async function addHostel(hostelData: any) {
 
 export async function addMarketplaceItem(itemData: any) {
   try {
-    console.log("Adding marketplace item to Google Sheets:", itemData)
+    console.log("Starting addMarketplaceItem function...")
+    const sheets = await getGoogleSheet(process.env.GOOGLE_SHEET_ID!)
     
-    // Validate sheet ID
-    const sheetId = process.env.GOOGLE_SHEET_ID
-    if (!sheetId) {
-      throw new Error("GOOGLE_SHEET_ID is not set")
-    }
-    
-    const doc = await getGoogleSheet(sheetId)
-    console.log("Successfully connected to Google Sheet")
-    
-    // Get or create the marketplace sheet (index 1)
-    let sheet = doc.sheetsByIndex[1]
-    
-    // Define the required headers
-    const requiredHeaders = [
-      "ID",
-      "Title",
-      "Category",
-      "Image URLs",
-      "Image Public IDs",
-      "Description",
-      "Price",
-      "WhatsApp Number",
-      "Status",
-      "Approval Status",
-      "Date Posted",
-      "Seller Name"
-    ]
+    // Get the marketplace sheet
+    const response = await sheets.spreadsheets.get({
+      spreadsheetId: process.env.GOOGLE_SHEET_ID!,
+    });
 
-    if (!sheet) {
-      console.log("Marketplace sheet not found, creating new sheet...")
-      sheet = await doc.addSheet({ 
-        title: "Marketplace",
-        headerValues: requiredHeaders
-      })
-      await sheet.loadHeaderRow()
-      console.log("Created new Marketplace sheet with headers")
+    // Find the marketplace sheet
+    const marketplaceSheet = response.data.sheets?.find(
+      sheet => sheet.properties?.title === "Marketplace"
+    );
+
+    if (!marketplaceSheet) {
+      // Create marketplace sheet if it doesn't exist
+      console.log("Creating new Marketplace sheet...")
+      await sheets.spreadsheets.batchUpdate({
+        spreadsheetId: process.env.GOOGLE_SHEET_ID!,
+        requestBody: {
+          requests: [{
+            addSheet: {
+              properties: {
+                title: "Marketplace",
+                gridProperties: {
+                  rowCount: 1000,
+                  columnCount: 12
+                }
+              }
+            }
+          }]
+        }
+      });
+
+      // Add headers
+      await sheets.spreadsheets.values.update({
+        spreadsheetId: process.env.GOOGLE_SHEET_ID!,
+        range: "Marketplace!A1:L1",
+        valueInputOption: "RAW",
+        requestBody: {
+          values: [[
+            "ID",
+            "Title",
+            "Category",
+            "Image URLs",
+            "Image Public IDs",
+            "Description",
+            "Price",
+            "WhatsApp Number",
+            "Status",
+            "Approval Status",
+            "Date Posted",
+            "Seller Name"
+          ]]
+        }
+      });
     }
 
-    // Make sure the sheet is loaded
-    await sheet.loadHeaderRow()
-    
-    // Check if headers exist and match required headers
-    const currentHeaders = sheet.headerValues || []
-    
-    if (currentHeaders.length === 0) {
-      console.log("Adding headers to existing Marketplace sheet...")
-      await sheet.setHeaderRow(requiredHeaders)
-      await sheet.loadHeaderRow()
-      console.log("Added headers to existing sheet")
-    } else {
-      // Verify all required headers are present
-      const missingHeaders = requiredHeaders.filter(header => !currentHeaders.includes(header))
-      if (missingHeaders.length > 0) {
-        console.log("Updating headers to include missing fields...")
-        await sheet.setHeaderRow(requiredHeaders)
-        await sheet.loadHeaderRow()
-        console.log("Updated sheet headers")
+    // Prepare the row data
+    const rowData = [
+      itemData.ID,
+      itemData.Title,
+      itemData.Category,
+      itemData["Image URLs"],
+      itemData["Image Public IDs"],
+      itemData.Description,
+      itemData.Price,
+      itemData["WhatsApp Number"],
+      itemData.Status,
+      itemData["Approval Status"],
+      itemData["Date Posted"],
+      itemData["Seller Name"]
+    ];
+
+    // Append the new row
+    await sheets.spreadsheets.values.append({
+      spreadsheetId: process.env.GOOGLE_SHEET_ID!,
+      range: "Marketplace!A:L",
+      valueInputOption: "RAW",
+      requestBody: {
+        values: [rowData]
       }
-    }
-    
-    console.log("Found marketplace sheet:", sheet.title)
-    console.log("Current headers:", sheet.headerValues)
-    
-    // Add the row with approval status
-    const itemDataWithApproval = {
-      ...itemData,
-      "Approval Status": "pending" // Set default approval status for new items
-    }
-    
-    console.log("Adding new row with data:", itemDataWithApproval)
-    const addedRow = await sheet.addRow(itemDataWithApproval)
-    console.log("Row added successfully. Row number:", addedRow.rowNumber)
-    
-    return { success: true }
+    });
+
+    console.log("Successfully added marketplace item:", {
+      id: itemData.ID,
+      title: itemData.Title
+    });
+
+    return { success: true };
   } catch (error) {
-    console.error("Error adding marketplace item:")
+    console.error("Error adding marketplace item:", error);
     if (error instanceof Error) {
-      console.error("Error name:", error.name)
-      console.error("Error message:", error.message)
-      console.error("Error stack:", error.stack)
+      console.error("Error details:", {
+        name: error.name,
+        message: error.message,
+        stack: error.stack
+      });
     }
     return { 
       success: false, 
-      error: error instanceof Error ? error.message : "Failed to add item to Google Sheets"
-    }
+      error: error instanceof Error ? error.message : "Failed to add marketplace item" 
+    };
   }
 }
 
