@@ -47,38 +47,44 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     updatedRow[approvalStatusIndex] = approvalStatus;
     updatedRow[statusIndex] = newStatus;
 
-    // Update the sheet
+    // Update the row in the sheet
     await sheets.spreadsheets.values.update({
       spreadsheetId: process.env.GOOGLE_SHEET_ID!,
-      range: `Marketplace!A${rowIndex + 1}:L${rowIndex + 1}`,
+      range: `Marketplace!A${rowIndex + 2}:L${rowIndex + 2}`,
       valueInputOption: "RAW",
       requestBody: {
         values: [updatedRow]
       }
     });
 
+    // Get the updated item data
+    const item = {
+      id: updatedRow[idIndex],
+      title: updatedRow[headers.indexOf("Title")],
+      category: updatedRow[headers.indexOf("Category")],
+      description: updatedRow[headers.indexOf("Description")],
+      price: Number(updatedRow[headers.indexOf("Price")]) || 0,
+      whatsappNumber: updatedRow[headers.indexOf("WhatsApp Number")],
+      sellerName: updatedRow[headers.indexOf("Seller Name")],
+      status: newStatus,
+      approvalStatus: approvalStatus,
+      datePosted: updatedRow[headers.indexOf("Date Posted")],
+      imageUrls: (updatedRow[headers.indexOf("Image URLs")] || "")
+        .split(",")
+        .map((url: string) => url.trim())
+        .filter((url: string) => url.length > 0),
+    };
+
     return NextResponse.json({ 
       success: true, 
-      message: "Marketplace item approval status updated successfully",
-      item: {
-        id: updatedRow[idIndex],
-        title: updatedRow[headers.indexOf("Title")],
-        approvalStatus: approvalStatus,
-        status: newStatus
-      }
+      message: `Item ${approvalStatus} successfully`,
+      item 
     });
   } catch (error) {
     console.error("Error updating marketplace item approval status:", error);
-    if (error instanceof Error) {
-      console.error("Error details:", {
-        name: error.name,
-        message: error.message,
-        stack: error.stack
-      });
-    }
     return NextResponse.json({ 
       error: "Failed to update approval status",
-      details: error instanceof Error ? error.message : "Unknown error"
+      details: error instanceof Error ? error.message : String(error)
     }, { status: 500 });
   }
 } 

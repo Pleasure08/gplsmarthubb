@@ -119,15 +119,14 @@ export default function MarketplacePage() {
     console.log("Filtering items...")
     console.log("Total items before filter:", items.length)
     
-    // First filter for approved items and available status
+    // First filter for approved items
     let filtered = items.filter(item => {
       const isApproved = item.approvalStatus?.toLowerCase() === "approved"
-      const isAvailable = item.status?.toLowerCase() === "available"
-      console.log(`Item ${item.id}: ${item.title} - Approved: ${isApproved}, Available: ${isAvailable}`)
-      return isApproved && isAvailable
+      console.log(`Item ${item.id}: ${item.title} - Approved: ${isApproved}`)
+      return isApproved
     })
     
-    console.log("Items after approval and availability filter:", filtered.length)
+    console.log("Items after approval filter:", filtered.length)
 
     // Search filter
     if (searchTerm) {
@@ -275,7 +274,7 @@ export default function MarketplacePage() {
                 // Refresh the items list
                 fetchItems()
               }}
-            />
+            /> 
           ))}
         </div>
 

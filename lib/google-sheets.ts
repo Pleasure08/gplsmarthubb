@@ -125,114 +125,94 @@ async function getOrCreateSheet(sheets: any, sheetId: string, title: string, hea
 export async function getHostels() {
   try {
     console.log("Starting getHostels function...")
-    const doc = await getGoogleSheet(process.env.GOOGLE_SHEET_ID!)
+    const sheets = await getGoogleSheet(process.env.GOOGLE_SHEET_ID!)
     
-    // Get or create the hostels sheet
-    let sheet = doc.sheetsByIndex[0] // Hostels sheet
-    
-    // Define required headers
-    const requiredHeaders = [
-      "ID",
-      "Name",
-      "Location",
-      "Price Per Year",
-      "Image URLs",
-      "Image Public IDs",
-      "Video URL",
-      "Video Public ID",
-      "WhatsApp Contact",
-      "Description",
-      "Status",
-      "Date Added",
-      "Views"
-    ]
+    // Get the hostels sheet
+    const response = await sheets.spreadsheets.get({
+      spreadsheetId: process.env.GOOGLE_SHEET_ID!,
+    });
 
-    // Create sheet if it doesn't exist
-    if (!sheet) {
-      console.log("Creating new Hostels sheet...")
-      sheet = await doc.addSheet({ 
-        title: "Hostels",
-        headerValues: requiredHeaders
-      })
-      await sheet.loadHeaderRow()
-      console.log("Created new Hostels sheet with headers")
-      return [] // Return empty array since sheet is new
+    // Find the hostels sheet
+    const hostelsSheet = response.data.sheets?.find(
+      sheet => sheet.properties?.title === "Hostels"
+    );
+
+    if (!hostelsSheet) {
+      console.log("Hostels sheet not found, returning empty array")
+      return [];
     }
 
-    // Load and verify headers
-    await sheet.loadHeaderRow()
-    const currentHeaders = sheet.headerValues || []
-    
-    // Update headers if needed
-    if (currentHeaders.length === 0 || !requiredHeaders.every(header => currentHeaders.includes(header))) {
-      console.log("Updating Hostels sheet headers...")
-      await sheet.setHeaderRow(requiredHeaders)
-      await sheet.loadHeaderRow()
+    // Get the values from the sheet
+    const valuesResponse = await sheets.spreadsheets.values.get({
+      spreadsheetId: process.env.GOOGLE_SHEET_ID!,
+      range: "Hostels!A:M",
+    });
+
+    const rows = valuesResponse.data.values || [];
+    console.log(`Found ${rows.length} rows in hostels sheet`);
+
+    if (rows.length <= 1) {
+      console.log("No data rows found in hostels sheet");
+      return [];
     }
 
-    // Get rows
-    const rows = await sheet.getRows()
-    console.log(`Found ${rows.length} total rows in sheet`)
+    // Get headers from first row
+    const headers = rows[0];
+    console.log("Hostels sheet headers:", headers);
 
-    const availableHostels = rows.filter((row) => row.get("Status") === "available")
-    console.log(`Found ${availableHostels.length} available hostels`)
+    // Process data rows
+    const hostels = rows.slice(1).map((row, index) => {
+      // Create an object with header keys
+      const hostel: any = {};
+      headers.forEach((header, i) => {
+        hostel[header] = row[i] || "";
+      });
 
-    return availableHostels.map((row) => {
-      // Get and clean image URLs
-      const rawImageUrls = row.get("Image URLs")
-      console.log(`Raw Image URLs for hostel ${row.get("ID")}: ${rawImageUrls}`)
-      
-      const imageUrls = (rawImageUrls || "")
+      // Process image URLs
+      const imageUrls = (hostel["Image URLs"] || "")
         .split(",")
         .map((url: string) => url.trim())
-        .filter((url: string) => url.length > 0)
+        .filter((url: string) => url.length > 0);
 
-      console.log(`Processed Image URLs for hostel ${row.get("ID")}:`, imageUrls)
-
-      // Get and clean image public IDs
-      const imagePublicIds = (row.get("Image Public IDs") || "")
+      // Process image public IDs
+      const imagePublicIds = (hostel["Image Public IDs"] || "")
         .split(",")
         .map((id: string) => id.trim())
-        .filter((id: string) => id.length > 0)
+        .filter((id: string) => id.length > 0);
 
       // Get video URL and public ID
-      const videoUrl = row.get("Video URL") || undefined
-      const videoPublicId = row.get("Video Public ID") || undefined
+      const videoUrl = hostel["Video URL"] || undefined;
+      const videoPublicId = hostel["Video Public ID"] || undefined;
 
-      const hostelData = {
-          id: row.get("ID"),
-          name: row.get("Name"),
-          location: row.get("Location"),
-          pricePerYear: Number.parseInt(row.get("Price Per Year")),
+      return {
+        id: hostel.ID,
+        name: hostel.Name,
+        location: hostel.Location,
+        pricePerYear: Number(hostel["Price Per Year"]) || 0,
         imageUrls: imageUrls,
         videoUrl: videoUrl,
         imagePublicIds: imagePublicIds,
         videoPublicId: videoPublicId,
-          whatsappContact: row.get("WhatsApp Contact"),
-          description: row.get("Description"),
-          status: row.get("Status"),
-          dateAdded: row.get("Date Added"),
-          views: Number.parseInt(row.get("Views") || "0"),
-        }
+        whatsappContact: hostel["WhatsApp Contact"],
+        description: hostel.Description,
+        status: hostel.Status || "available",
+        dateAdded: hostel["Date Added"],
+        views: Number(hostel.Views || "0"),
+      };
+    });
 
-      console.log(`Processed hostel data for ${hostelData.id}:`, {
-        name: hostelData.name,
-        imageUrlsCount: hostelData.imageUrls.length,
-        hasVideo: Boolean(hostelData.videoUrl)
-      })
-
-      return hostelData
-      })
+    console.log(`Processed ${hostels.length} hostels`);
+    return hostels;
   } catch (error) {
-    console.error("Error in getHostels:", error)
+    console.error("Error in getHostels:", error);
     if (error instanceof Error) {
       console.error("Error details:", {
         name: error.name,
         message: error.message,
         stack: error.stack
-      })
+      });
     }
-    return []
+    return [];
   }
 }
 
