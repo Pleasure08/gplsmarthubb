@@ -11,10 +11,6 @@ function setCORSHeaders(request: NextRequest, response: NextResponse) {
   const origin = request.headers.get('Origin');
   if (origin && allowedOrigins.includes(origin)) {
     response.headers.set('Access-Control-Allow-Origin', origin);
-  } else {
-    // Optionally, if the origin is not allowed, you could set a default or deny explicitly.
-    // For production, you might want to consider explicit denial or more sophisticated logic.
-    // For now, if the origin is not allowed, the header won't be set by this function for stricter control.
   }
   response.headers.set('Access-Control-Allow-Methods', 'POST, GET, OPTIONS, DELETE, PUT');
   response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
@@ -126,7 +122,7 @@ export async function POST(request: NextRequest) {
       "Video Public ID": videoPublicId,
       "WhatsApp Contact": whatsappContact,
       Description: description,
-      Status: status,
+      Status: status || "available",
       "Date Added": new Date().toISOString().split("T")[0],
       Views: "0",
     }
@@ -140,7 +136,7 @@ export async function POST(request: NextRequest) {
 
     if (result.success) {
       console.log("=== Admin Hostel Upload Completed Successfully ===")
-      return NextResponse.json({ 
+      const response = NextResponse.json({ 
         success: true, 
         hostel: {
           ...hostelData,
@@ -148,7 +144,8 @@ export async function POST(request: NextRequest) {
           videoUrl: videoUrl,
           id: hostelData.ID
         }
-      })
+      });
+      return setCORSHeaders(request, response);
     } else {
       console.error("Google Sheets returned error:", result.error)
       const response = NextResponse.json({ error: result.error }, { status: 500 });
