@@ -1,7 +1,7 @@
-import { GoogleSpreadsheet } from "google-spreadsheet"
-import { JWT } from "google-auth-library"
+import { google } from 'googleapis';
+import { auth } from './google-auth';
 
-const SCOPES = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive.file"]
+const SCOPES = ['https://www.googleapis.com/auth/spreadsheets'];
 
 // Validate environment variables
 function validateGoogleConfig() {
@@ -25,43 +25,19 @@ export async function getGoogleSheet(sheetId: string) {
 
     console.log("Connecting to Google Sheets...")
     console.log("Sheet ID:", sheetId)
-    console.log("Service Account Email:", process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL)
 
-    // Check if private key exists and format it properly
-    const privateKey = process.env.GOOGLE_PRIVATE_KEY
-    if (!privateKey) {
-      throw new Error("GOOGLE_PRIVATE_KEY environment variable is not set")
-    }
+    // Create sheets client with auth
+    const sheets = google.sheets({ version: 'v4', auth });
+    
+    // Test the connection
+    const response = await sheets.spreadsheets.get({
+      spreadsheetId: sheetId,
+    });
 
-    console.log("Private key length:", privateKey.length)
-    console.log("Private key starts with:", privateKey.substring(0, 50))
-
-    // Format the private key properly - handle both production and development environments
-    const formattedPrivateKey = privateKey
-      .replace(/\\n/g, "\n")  // Handle Vercel's environment
-      .replace(/\\\\n/g, "\n") // Handle double-escaped newlines
-      .replace(/"/g, "")      // Remove any quotes
-      .trim()                 // Remove any extra whitespace
-
-    // Create JWT client with explicit type
-    const jwt = new JWT({
-      email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-      key: formattedPrivateKey,
-      scopes: SCOPES,
-    })
-
-    console.log("JWT client created successfully")
-
-    // Create and load the sheet
-    const doc = new GoogleSpreadsheet(sheetId, jwt)
-    console.log("GoogleSpreadsheet instance created")
-
-    await doc.loadInfo()
     console.log("Sheet info loaded successfully")
-    console.log("Sheet title:", doc.title)
-    console.log("Number of sheets:", doc.sheetCount)
-
-    return doc
+    console.log("Sheet title:", response.data.properties?.title)
+    
+    return sheets;
   } catch (error) {
     console.error("Error connecting to Google Sheets:")
     if (error instanceof Error) {
@@ -74,6 +50,8 @@ export async function getGoogleSheet(sheetId: string) {
         console.error("Authentication failed. Check if your service account credentials are correct.")
       } else if (error.message.includes('not found')) {
         console.error("Sheet not found. Check if the Sheet ID is correct and the service account has access.")
+      } else if (error.message.includes('unregistered callers')) {
+        console.error("API access not enabled. Please enable the Google Sheets API in your Google Cloud Console.")
       }
     }
     throw error

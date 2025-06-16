@@ -7,10 +7,18 @@ import { Toaster } from "@/components/ui/toaster"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "GPL SmartHub - Student Platform",
-  description: "Find hostels and buy/sell items in the student marketplace",
+  title: "GPL SmartHub",
+  description: "Your all-in-one student platform for hostels, marketplace, and more.",
   keywords: "student, hostel, marketplace, books, electronics",
-    generator: 'v0.dev'
+  icons: {
+    icon: [
+      {
+        url: "/favicon.ico",
+        sizes: "any",
+      },
+    ],
+  },
+  generator: 'v0.dev'
 }
 
 export default function RootLayout({
