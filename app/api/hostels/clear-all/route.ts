@@ -3,32 +3,34 @@ import { getGoogleSheet } from "@/lib/google-sheets"
 
 export async function DELETE(request: NextRequest) {
   try {
-    const doc = await getGoogleSheet(process.env.GOOGLE_SHEET_ID!)
+    const sheets = await getGoogleSheet(process.env.GOOGLE_SHEET_ID!)
     
-    // Get the hostels sheet (index 0)
-    const sheet = doc.sheetsByIndex[0]
-    
-    if (!sheet) {
-      return NextResponse.json({ message: "Hostels sheet not found" })
+    // Get all values from the Hostels sheet
+    const response = await sheets.spreadsheets.values.get({
+      spreadsheetId: process.env.GOOGLE_SHEET_ID!,
+      range: "Hostels!A:M",
+    });
+
+    const rows = response.data.values || [];
+    if (rows.length <= 1) {
+      return NextResponse.json({ message: "No hostels found" });
     }
 
-    // Delete all rows except header
-    const rows = await sheet.getRows()
-    console.log(`Found ${rows.length} hostels to delete`)
-    
-    for (const row of rows) {
-      await row.delete()
-      console.log(`Deleted hostel with ID: ${row.get("ID")}`)
-    }
+    // Clear all rows except header
+    await sheets.spreadsheets.values.clear({
+      spreadsheetId: process.env.GOOGLE_SHEET_ID!,
+      range: "Hostels!A2:M",
+    });
 
     return NextResponse.json({ 
       success: true, 
-      message: `Successfully cleared ${rows.length} hostels` 
-    })
+      message: `Successfully cleared ${rows.length - 1} hostels` 
+    });
   } catch (error) {
-    console.error("Error clearing hostels:", error)
+    console.error("Error clearing hostels:", error);
     return NextResponse.json({ 
-      error: "Failed to clear hostels" 
-    }, { status: 500 })
+      error: "Failed to clear hostels",
+      details: error instanceof Error ? error.message : String(error)
+    }, { status: 500 });
   }
 } 
