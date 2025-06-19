@@ -29,6 +29,11 @@ async function verifyPayment(reference: string) {
   }
 }
 
+console.log('ENV KEY PREVIEW ➤', {
+  startsWith: process.env.GOOGLE_PRIVATE_KEY?.slice(0, 40),
+  endsWith: process.env.GOOGLE_PRIVATE_KEY?.slice(-40),
+});
+
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData()
