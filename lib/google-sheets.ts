@@ -19,63 +19,22 @@ function validateGoogleConfig() {
 }
 
 export async function getGoogleSheet(sheetId: string) {
-  try {
-    // Validate environment variables first
-    validateGoogleConfig()
-
-    console.log("Connecting to Google Sheets...")
-    console.log("Sheet ID:", sheetId)
-    console.log("Service Account Email:", process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL)
-
-    // Check if private key exists and format it properly
-    let privateKey = process.env.GOOGLE_PRIVATE_KEY || "";
-    // Auto-convert if \n is present, otherwise use as is
-    if (privateKey.includes("\\n")) {
-      privateKey = privateKey.replace(/\\n/g, "\n");
-    }
-    console.log("Private key preview:");
-    console.log("Starts with:", privateKey.slice(0, 30));
-    console.log("Ends with:", privateKey.slice(-30));
-    console.log("Private key length:", privateKey.length);
-    if (!privateKey) {
-      throw new Error("GOOGLE_PRIVATE_KEY environment variable is not set");
-    }
-
-    // Create JWT client
-    const jwt = new JWT({
-      email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-      key: privateKey,
-      scopes: SCOPES,
-    })
-
-    console.log("JWT client created successfully")
-
-    // Create and load the sheet
-    const doc = new GoogleSpreadsheet(sheetId, jwt)
-    console.log("GoogleSpreadsheet instance created")
-
-    await doc.loadInfo()
-    console.log("Sheet info loaded successfully")
-    console.log("Sheet title:", doc.title)
-    console.log("Number of sheets:", doc.sheetCount)
-
-    return doc
-  } catch (error) {
-    console.error("Error connecting to Google Sheets:")
-    if (error instanceof Error) {
-      console.error("Error name:", error.name)
-      console.error("Error message:", error.message)
-      console.error("Error stack:", error.stack)
-      
-      // Additional debugging for specific error types
-      if (error.message.includes('invalid_grant')) {
-        console.error("Authentication failed. Check if your service account credentials are correct.")
-      } else if (error.message.includes('not found')) {
-        console.error("Sheet not found. Check if the Sheet ID is correct and the service account has access.")
-      }
-    }
-    throw error
+  validateGoogleConfig()
+  const privateKey = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n')
+  const clientEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL
+  if (!privateKey || !clientEmail) {
+    throw new Error('Missing Google service account credentials.')
   }
+  console.log('[DEBUG] Private Key Starts With:', privateKey.slice(0, 30))
+  console.log('[DEBUG] Private Key Ends With:', privateKey.slice(-30))
+  const jwt = new JWT({
+    email: clientEmail,
+    key: privateKey,
+    scopes: SCOPES,
+  })
+  const doc = new GoogleSpreadsheet(sheetId, jwt)
+  await doc.loadInfo()
+  return doc
 }
 
 export async function getHostels() {
