@@ -28,7 +28,11 @@ export async function getGoogleSheet(sheetId: string) {
     console.log("Service Account Email:", process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL)
 
     // Check if private key exists and format it properly
-    const privateKey = process.env.GOOGLE_PRIVATE_KEY || "";
+    let privateKey = process.env.GOOGLE_PRIVATE_KEY || "";
+    // Auto-convert if \n is present, otherwise use as is
+    if (privateKey.includes("\\n")) {
+      privateKey = privateKey.replace(/\\n/g, "\n");
+    }
     console.log("Private key preview:");
     console.log("Starts with:", privateKey.slice(0, 30));
     console.log("Ends with:", privateKey.slice(-30));
@@ -37,13 +41,10 @@ export async function getGoogleSheet(sheetId: string) {
       throw new Error("GOOGLE_PRIVATE_KEY environment variable is not set");
     }
 
-    // Format the private key properly
-    const formattedPrivateKey = privateKey.replace(/\\n/g, "\n")
-
     // Create JWT client
     const jwt = new JWT({
       email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-      key: formattedPrivateKey,
+      key: privateKey,
       scopes: SCOPES,
     })
 
