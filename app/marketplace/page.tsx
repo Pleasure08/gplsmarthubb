@@ -265,7 +265,7 @@ export default function MarketplacePage() {
         </div>
 
         {/* Items Grid */}
-        <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 animate-fade-in`}>
+        <div className={`grid ${getGridClasses()} animate-fade-in`}>
           {filteredItems.map((item) => (
             <MarketplaceCard 
               key={item.id} 

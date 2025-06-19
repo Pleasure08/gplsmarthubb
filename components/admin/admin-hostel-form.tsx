@@ -39,6 +39,17 @@ export function AdminHostelForm({ onSuccess }: AdminHostelFormProps) {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const newFiles = Array.from(e.target.files)
+      // File size check
+      for (const file of newFiles) {
+        if (file.size > 10 * 1024 * 1024) {
+          toast({
+            title: "File too large",
+            description: `Each image must be less than 10MB. '${file.name}' is too large.`,
+            variant: "destructive",
+          })
+          return
+        }
+      }
       if (images.length + newFiles.length > 3) {
         toast({
           title: "Too many images",
@@ -54,11 +65,11 @@ export function AdminHostelForm({ onSuccess }: AdminHostelFormProps) {
   const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0]
-      // Check file size (max 100MB)
-      if (file.size > 100 * 1024 * 1024) {
+      // File size check (max 50MB)
+      if (file.size > 50 * 1024 * 1024) {
         toast({
           title: "File too large",
-          description: "Video must be less than 100MB",
+          description: "Video must be less than 50MB.",
           variant: "destructive",
         })
         return
@@ -285,7 +296,7 @@ export function AdminHostelForm({ onSuccess }: AdminHostelFormProps) {
       </div>
 
       <div>
-        <Label htmlFor="video">Hostel Video (Optional, max 100MB)</Label>
+        <Label htmlFor="video">Hostel Video (Optional, max 50MB)</Label>
         <Input id="video" type="file" accept="video/*" onChange={handleVideoChange} className="mb-4" />
 
         {/* Video Preview */}

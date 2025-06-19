@@ -41,6 +41,17 @@ export const UploadForm = ({ onSuccess }: UploadFormProps) => {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const newFiles = Array.from(e.target.files)
+      // File size check
+      for (const file of newFiles) {
+        if (file.size > 10 * 1024 * 1024) {
+          toast({
+            title: "File too large",
+            description: `Each image must be less than 10MB. '${file.name}' is too large.`,
+            variant: "destructive",
+          })
+          return
+        }
+      }
       if (images.length + newFiles.length > 4) {
         toast({
           title: "Too many images",

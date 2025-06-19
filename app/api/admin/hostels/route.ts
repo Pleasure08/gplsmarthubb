@@ -68,6 +68,11 @@ export async function POST(request: NextRequest) {
     for (let i = 0; i < imageCount; i++) {
       const file = formData.get(`image_${i}`) as File
       if (file) {
+        // File size check (max 10MB)
+        if (file.size > 10 * 1024 * 1024) {
+          const response = NextResponse.json({ error: `Image ${i + 1} is too large. Max size is 10MB.` }, { status: 400 });
+          return setCORSHeaders(request, response);
+        }
         console.log(`Uploading image ${i + 1}:`, {
           name: file.name,
           type: file.type,
@@ -95,6 +100,11 @@ export async function POST(request: NextRequest) {
     if (hasVideo) {
       const videoFile = formData.get("video") as File
       if (videoFile) {
+        // File size check (max 50MB)
+        if (videoFile.size > 50 * 1024 * 1024) {
+          const response = NextResponse.json({ error: "Video is too large. Max size is 50MB." }, { status: 400 });
+          return setCORSHeaders(request, response);
+        }
         console.log("Uploading video:", {
           name: videoFile.name,
           type: videoFile.type,

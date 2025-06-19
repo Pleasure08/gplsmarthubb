@@ -61,7 +61,10 @@ export async function POST(request: NextRequest) {
         })
         return NextResponse.json({ error: `Image ${i + 1} is missing` }, { status: 400 })
       }
-
+      // File size check (max 10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        return NextResponse.json({ error: `Image ${i + 1} is too large. Max size is 10MB.` }, { status: 400 })
+      }
       try {
         console.log(`Uploading image ${i + 1}/${imageCount}...`, {
           name: file.name,
