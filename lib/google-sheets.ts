@@ -29,6 +29,8 @@ export async function getGoogleSheet(sheetId: string) {
 
     // Check if private key exists and format it properly
     const privateKey = process.env.GOOGLE_PRIVATE_KEY
+    console.log("startsWith:", privateKey?.slice(0, 50))
+    console.log("endsWith:", privateKey?.slice(-50))
     if (!privateKey) {
       throw new Error("GOOGLE_PRIVATE_KEY environment variable is not set")
     }
