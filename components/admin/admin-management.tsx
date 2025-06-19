@@ -156,6 +156,46 @@ export function AdminManagement() {
     }
   }
 
+  // Clear all hostels
+  const clearAllHostels = async () => {
+    if (!confirm("Are you sure you want to delete ALL hostels? This action cannot be undone.")) {
+      return
+    }
+    try {
+      const response = await fetch("/api/hostels/clear-all", { method: "DELETE" })
+      const data = await response.json()
+      if (response.ok && data.success) {
+        setHostels([])
+        toast({ title: "Success", description: "All hostels deleted." })
+      } else {
+        throw new Error(data.error || "Failed to clear hostels")
+      }
+    } catch (error) {
+      console.error("Error clearing all hostels:", error)
+      toast({ title: "Error", description: error instanceof Error ? error.message : String(error), variant: "destructive" })
+    }
+  }
+
+  // Clear all marketplace items
+  const clearAllMarketplace = async () => {
+    if (!confirm("Are you sure you want to delete ALL marketplace items? This action cannot be undone.")) {
+      return
+    }
+    try {
+      const response = await fetch("/api/marketplace/clear-all", { method: "DELETE" })
+      const data = await response.json()
+      if (response.ok && data.success) {
+        setMarketplaceItems([])
+        toast({ title: "Success", description: "All marketplace items deleted." })
+      } else {
+        throw new Error(data.error || "Failed to clear marketplace items")
+      }
+    } catch (error) {
+      console.error("Error clearing all marketplace items:", error)
+      toast({ title: "Error", description: error instanceof Error ? error.message : String(error), variant: "destructive" })
+    }
+  }
+
   if (loading) {
     return (
       <div className="space-y-6">
@@ -178,6 +218,14 @@ export function AdminManagement() {
           <CardTitle className="flex items-center gap-2">
             <Building className="h-5 w-5 text-orange-500" />
             Manage Hostels ({hostels.length})
+            <Button
+              variant="destructive"
+              size="sm"
+              className="ml-auto"
+              onClick={clearAllHostels}
+            >
+              Clear All
+            </Button>
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -236,6 +284,14 @@ export function AdminManagement() {
           <CardTitle className="flex items-center gap-2">
             <ShoppingBag className="h-5 w-5 text-orange-500" />
             Manage Marketplace Items ({marketplaceItems.length})
+            <Button
+              variant="destructive"
+              size="sm"
+              className="ml-auto"
+              onClick={clearAllMarketplace}
+            >
+              Clear All
+            </Button>
           </CardTitle>
         </CardHeader>
         <CardContent>
