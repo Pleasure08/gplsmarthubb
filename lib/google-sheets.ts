@@ -28,15 +28,14 @@ export async function getGoogleSheet(sheetId: string) {
     console.log("Service Account Email:", process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL)
 
     // Check if private key exists and format it properly
-    const privateKey = process.env.GOOGLE_PRIVATE_KEY
-    console.log("startsWith:", privateKey?.slice(0, 50))
-    console.log("endsWith:", privateKey?.slice(-50))
+    const privateKey = process.env.GOOGLE_PRIVATE_KEY || "";
+    console.log("Private key preview:");
+    console.log("Starts with:", privateKey.slice(0, 30));
+    console.log("Ends with:", privateKey.slice(-30));
+    console.log("Private key length:", privateKey.length);
     if (!privateKey) {
-      throw new Error("GOOGLE_PRIVATE_KEY environment variable is not set")
+      throw new Error("GOOGLE_PRIVATE_KEY environment variable is not set");
     }
-
-    console.log("Private key length:", privateKey.length)
-    console.log("Private key starts with:", privateKey.substring(0, 50))
 
     // Format the private key properly
     const formattedPrivateKey = privateKey.replace(/\\n/g, "\n")
