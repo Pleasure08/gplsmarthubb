@@ -20,6 +20,7 @@ export default function MarketplacePage() {
   const [selectedCategory, setSelectedCategory] = useState("all")
   const [priceFilter, setPriceFilter] = useState({ minPrice: 0, maxPrice: Number.POSITIVE_INFINITY })
   const [showFilters, setShowFilters] = useState(false)
+  const [statusFilter, setStatusFilter] = useState("all")
 
   const categories = [
     { id: "all", name: "All Categories", icon: Package, color: "bg-gray-100" },
@@ -36,7 +37,7 @@ export default function MarketplacePage() {
 
   useEffect(() => {
     filterItems()
-  }, [items, searchTerm, selectedCategory, priceFilter])
+  }, [items, searchTerm, selectedCategory, priceFilter, statusFilter])
 
   const fetchItems = async () => {
     try {
@@ -97,13 +98,13 @@ export default function MarketplacePage() {
     console.log("Filtering items...")
     console.log("Total items before filter:", items.length)
     
-    // First filter for approved items and available status
-    let filtered = items.filter(item => {
-      const isApproved = item.approvalStatus?.toLowerCase() === "approved"
-      const isAvailable = item.status?.toLowerCase() === "available"
-      console.log(`Item ${item.id}: ${item.title} - Approved: ${isApproved}, Available: ${isAvailable}`)
-      return isApproved && isAvailable
-    })
+    let filtered = items
+    // Status filter
+    if (statusFilter !== "all") {
+      filtered = filtered.filter(item => item.status?.toLowerCase() === statusFilter.toLowerCase())
+    }
+    // Approval filter (only show approved and available to non-admins)
+    filtered = filtered.filter(item => item.approvalStatus?.toLowerCase() === "approved" || statusFilter !== "available")
     
     console.log("Items after approval and availability filter:", filtered.length)
 
@@ -218,28 +219,38 @@ export default function MarketplacePage() {
         </div>
 
         {/* Search and Filter Controls */}
-        <div className="mb-8 space-y-4">
-          <div className="flex flex-col lg:flex-row gap-4">
-            <div className="flex-1">
-              <SearchBar
-                placeholder="Search items, descriptions, or sellers..."
-                value={searchTerm}
-                onChange={setSearchTerm}
-              />
-            </div>
-            <Button onClick={() => setShowFilters(!showFilters)} variant="outline" className="lg:w-auto w-full">
-              <SlidersHorizontal className="h-4 w-4 mr-2" />
-              {showFilters ? "Hide Filters" : "Show Filters"}
-            </Button>
+        <div className="mb-8 flex flex-col md:flex-row gap-4 items-center">
+          <div className="flex-1">
+            <SearchBar
+              placeholder="Search items, descriptions, or sellers..."
+              value={searchTerm}
+              onChange={setSearchTerm}
+            />
           </div>
-
-          {/* Price Filter */}
-          {showFilters && (
-            <div className="max-w-md animate-slide-in-up">
-              <PriceRangeFilter onFilterChange={handlePriceFilterChange} title="Filter by Item Price" />
-            </div>
-          )}
+          <div>
+            <select
+              value={statusFilter}
+              onChange={e => setStatusFilter(e.target.value)}
+              className="border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+            >
+              <option value="all">All Statuses</option>
+              <option value="available">Available</option>
+              <option value="sold">Sold</option>
+              <option value="pending">Pending</option>
+            </select>
+          </div>
+          <Button onClick={() => setShowFilters(!showFilters)} variant="outline" className="lg:w-auto w-full">
+            <SlidersHorizontal className="h-4 w-4 mr-2" />
+            {showFilters ? "Hide Filters" : "Show Filters"}
+          </Button>
         </div>
+
+        {/* Price Filter */}
+        {showFilters && (
+          <div className="max-w-md animate-slide-in-up">
+            <PriceRangeFilter onFilterChange={handlePriceFilterChange} title="Filter by Item Price" />
+          </div>
+        )}
 
         {/* Results Summary */}
         <div className="mb-6 animate-slide-in-up">

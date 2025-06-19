@@ -19,6 +19,7 @@ export default function HostelsPage() {
   const [priceFilter, setPriceFilter] = useState({ minPrice: 0, maxPrice: Number.POSITIVE_INFINITY })
   const [locationFilter, setLocationFilter] = useState("")
   const [showFilters, setShowFilters] = useState(false)
+  const [statusFilter, setStatusFilter] = useState("all")
 
   useEffect(() => {
     fetchHostels()
@@ -43,6 +44,11 @@ export default function HostelsPage() {
 
   const filterHostels = () => {
     let filtered = hostels
+
+    // Status filter
+    if (statusFilter !== "all") {
+      filtered = filtered.filter(hostel => hostel.status?.toLowerCase() === statusFilter.toLowerCase())
+    }
 
     // Search filter
     if (searchTerm) {
@@ -109,32 +115,41 @@ export default function HostelsPage() {
 
       <div className="container mx-auto px-4 py-8 bg-gray-50">
         {/* Search and Filter Controls */}
-        <div className="mb-8 space-y-4">
-          <div className="flex flex-col lg:flex-row gap-4">
-            <div className="flex-1">
-              <SearchBar
-                placeholder="Search by name, location, or description..."
-                value={searchTerm}
-                onChange={setSearchTerm}
-              />
-            </div>
-            <Button onClick={() => setShowFilters(!showFilters)} variant="outline" className="lg:w-auto w-full">
-              <SlidersHorizontal className="h-4 w-4 mr-2" />
-              {showFilters ? "Hide Filters" : "Show Filters"}
-            </Button>
+        <div className="mb-8 flex flex-col md:flex-row gap-4 items-center">
+          <div className="flex-1">
+            <SearchBar
+              placeholder="Search by name, location, or description..."
+              value={searchTerm}
+              onChange={setSearchTerm}
+            />
           </div>
-
-          {/* Filters */}
-          {showFilters && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-slide-in-up">
-              <PriceRangeFilter onFilterChange={handlePriceFilterChange} title="Filter by Annual Price" />
-              <LocationFilter
-                onFilterChange={handleLocationFilterChange}
-                placeholder="Enter location (e.g., Ikeja, Lagos)"
-              />
-            </div>
-          )}
+          <div>
+            <select
+              value={statusFilter}
+              onChange={e => setStatusFilter(e.target.value)}
+              className="border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+            >
+              <option value="all">All Statuses</option>
+              <option value="available">Available</option>
+              <option value="full">Full</option>
+            </select>
+          </div>
+          <Button onClick={() => setShowFilters(!showFilters)} variant="outline" className="lg:w-auto w-full">
+            <SlidersHorizontal className="h-4 w-4 mr-2" />
+            {showFilters ? "Hide Filters" : "Show Filters"}
+          </Button>
         </div>
+
+        {/* Filters */}
+        {showFilters && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-slide-in-up">
+            <PriceRangeFilter onFilterChange={handlePriceFilterChange} title="Filter by Annual Price" />
+            <LocationFilter
+              onFilterChange={handleLocationFilterChange}
+              placeholder="Enter location (e.g., Ikeja, Lagos)"
+            />
+          </div>
+        )}
 
         {/* Results Summary */}
         <div className="mb-6 animate-slide-in-up">
