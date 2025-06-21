@@ -1,32 +1,40 @@
 import { GoogleSpreadsheet } from "google-spreadsheet"
 import { JWT } from "google-auth-library"
+import { getConfig, getFormattedPrivateKey, logConfigStatus } from "./config"
 
 const SCOPES = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive.file"]
 
 // Validate environment variables
 function validateGoogleConfig() {
-  const requiredVars = [
-    'GOOGLE_SERVICE_ACCOUNT_EMAIL',
-    'GOOGLE_PRIVATE_KEY',
-    'GOOGLE_SHEET_ID'
-  ]
+  const config = getConfig();
   
-  const missing = requiredVars.filter(varName => !process.env[varName])
-  
-  if (missing.length > 0) {
-    throw new Error(`Missing required environment variables: ${missing.join(', ')}`)
+  if (!config.google.serviceAccountEmail) {
+    throw new Error('GOOGLE_SERVICE_ACCOUNT_EMAIL is required');
+  }
+  if (!config.google.privateKey) {
+    throw new Error('GOOGLE_PRIVATE_KEY is required');
+  }
+  if (!config.google.sheetId) {
+    throw new Error('GOOGLE_SHEET_ID is required');
   }
 }
 
 export async function getGoogleSheet(sheetId: string) {
-  validateGoogleConfig()
-  const privateKey = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n')
-  const clientEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL
-  if (!privateKey || !clientEmail) {
-    throw new Error('Missing Google service account credentials.')
-  }
-  console.log('[DEBUG] Private Key Starts With:', privateKey.slice(0, 30))
-  console.log('[DEBUG] Private Key Ends With:', privateKey.slice(-30))
+  // Log configuration status for debugging
+  logConfigStatus();
+  
+  validateGoogleConfig();
+  
+  const config = getConfig();
+  const privateKey = getFormattedPrivateKey();
+  const clientEmail = config.google.serviceAccountEmail;
+  
+  console.log('[DEBUG] Environment:', config.isProduction ? 'Production' : 'Development');
+  console.log('[DEBUG] Private Key Starts With:', privateKey.slice(0, 30));
+  console.log('[DEBUG] Private Key Ends With:', privateKey.slice(-30));
+  console.log('[DEBUG] Service Account Email:', clientEmail);
+  console.log('[DEBUG] Sheet ID:', sheetId);
+  
   const jwt = new JWT({
     email: clientEmail,
     key: privateKey,
@@ -40,7 +48,8 @@ export async function getGoogleSheet(sheetId: string) {
 export async function getHostels() {
   try {
     console.log("Starting getHostels function...")
-    const doc = await getGoogleSheet(process.env.GOOGLE_SHEET_ID!)
+    const config = getConfig();
+    const doc = await getGoogleSheet(config.google.sheetId)
     
     // Get or create the hostels sheet
     let sheet = doc.sheetsByIndex[0] // Hostels sheet
@@ -153,7 +162,8 @@ export async function getHostels() {
 
 export async function getMarketplaceItems() {
   try {
-    const doc = await getGoogleSheet(process.env.GOOGLE_SHEET_ID!)
+    const config = getConfig();
+    const doc = await getGoogleSheet(config.google.sheetId)
     
     // Get or create the marketplace sheet
     let sheet = doc.sheetsByIndex[1] // Marketplace sheet
@@ -244,7 +254,8 @@ export async function getMarketplaceItems() {
 export async function addHostel(hostelData: any) {
   try {
     console.log("Adding hostel to Google Sheets:", hostelData)
-    const doc = await getGoogleSheet(process.env.GOOGLE_SHEET_ID!)
+    const config = getConfig();
+    const doc = await getGoogleSheet(config.google.sheetId)
     const sheet = doc.sheetsByIndex[0] // Hostels sheet
 
     // Make sure the sheet exists
@@ -272,8 +283,9 @@ export async function addMarketplaceItem(itemData: any) {
   try {
     console.log("Adding marketplace item to Google Sheets:", itemData)
     
-    // Validate sheet ID
-    const sheetId = process.env.GOOGLE_SHEET_ID
+    const config = getConfig();
+    const sheetId = config.google.sheetId;
+    
     if (!sheetId) {
       throw new Error("GOOGLE_SHEET_ID is not set")
     }
@@ -362,7 +374,8 @@ export async function addMarketplaceItem(itemData: any) {
 
 export async function updateItemStatus(itemId: string, status: string) {
   try {
-    const doc = await getGoogleSheet(process.env.GOOGLE_SHEET_ID!)
+    const config = getConfig();
+    const doc = await getGoogleSheet(config.google.sheetId)
     const sheet = doc.sheetsByIndex[1]
     const rows = await sheet.getRows()
 
@@ -382,7 +395,8 @@ export async function updateItemStatus(itemId: string, status: string) {
 // Settings functions
 export async function getSettings() {
   try {
-    const doc = await getGoogleSheet(process.env.GOOGLE_SHEET_ID!)
+    const config = getConfig();
+    const doc = await getGoogleSheet(config.google.sheetId)
 
     // Try to get settings sheet (index 2), create if doesn't exist
     let settingsSheet = doc.sheetsByIndex[2]
@@ -509,7 +523,8 @@ export async function getSettings() {
 
 export async function updateSettings(newSettings: any) {
   try {
-    const doc = await getGoogleSheet(process.env.GOOGLE_SHEET_ID!)
+    const config = getConfig();
+    const doc = await getGoogleSheet(config.google.sheetId)
     const settingsSheet = doc.sheetsByIndex[2]
 
     if (!settingsSheet) {

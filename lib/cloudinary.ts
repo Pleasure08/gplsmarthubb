@@ -1,10 +1,12 @@
 import { v2 as cloudinary } from "cloudinary"
+import { getConfig, logConfigStatus } from "./config"
 
 // Configure Cloudinary
+const config = getConfig();
 cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
+  cloud_name: config.cloudinary.cloudName,
+  api_key: config.cloudinary.apiKey,
+  api_secret: config.cloudinary.apiSecret,
 })
 
 export async function uploadImage(file: File, folder: string) {
@@ -16,12 +18,15 @@ export async function uploadImage(file: File, folder: string) {
       folder: folder
     })
 
+    // Log configuration status for debugging
+    logConfigStatus();
+
     // Verify Cloudinary configuration
-    if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
+    if (!config.cloudinary.cloudName || !config.cloudinary.apiKey || !config.cloudinary.apiSecret) {
       console.error("Cloudinary configuration missing:", {
-        hasCloudName: Boolean(process.env.CLOUDINARY_CLOUD_NAME),
-        hasApiKey: Boolean(process.env.CLOUDINARY_API_KEY),
-        hasApiSecret: Boolean(process.env.CLOUDINARY_API_SECRET)
+        hasCloudName: Boolean(config.cloudinary.cloudName),
+        hasApiKey: Boolean(config.cloudinary.apiKey),
+        hasApiSecret: Boolean(config.cloudinary.apiSecret)
       })
       throw new Error("Cloudinary configuration is incomplete")
     }

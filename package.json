@@ -2,11 +2,18 @@
   "name": "my-v0-project",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "setup": "node scripts/setup-env.js",
+    "test:env": "node env-test.js",
+    "test:sheets": "node test-sheet.js",
+    "test:config": "npm run test:env && npm run test:sheets",
+    "deploy:check": "node scripts/deploy-production.js",
+    "deploy:ready": "node scripts/production-readiness.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",

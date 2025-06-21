@@ -1,14 +1,16 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { addMarketplaceItem } from "@/lib/google-sheets"
 import { uploadImage } from "@/lib/cloudinary"
+import { getConfig } from "@/lib/config"
 
 // Helper function to verify payment
 async function verifyPayment(reference: string) {
   try {
+    const config = getConfig();
     const response = await fetch("https://api.paystack.co/transaction/verify/" + reference, {
       method: "GET",
       headers: {
-        Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
+        Authorization: `Bearer ${config.paystack.secretKey}`,
         "Content-Type": "application/json",
       },
     })
